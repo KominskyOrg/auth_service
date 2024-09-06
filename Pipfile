@@ -3,10 +3,19 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
-[packages]
+[scripts]
+start = "flask run"
 
-[dev-packages]
+[packages]
+alembic = "*"
 flask = "*"
+flask-sqlalchemy = "*"
+pymysql = "*"
+python-dotenv = "*"
+flask-migrate = "*"
+flask-cors = "*"
+jwt = "*"
+requests = "*"
 
 [requires]
 python_version = "3.12"
