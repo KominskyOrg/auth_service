@@ -1,29 +1,22 @@
 # app/__init__.py
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_cors import CORS
-from app.config import get_config
-
-# Initialize extensions
-db = SQLAlchemy()
-migrate = Migrate()
+from app.routes import auth_service_bp
+import os
 
 def create_app():
-    app = Flask(__name__, template_folder='../html')
-    
-    # Load configuration
-    config = get_config()
-    app.config.from_object(config)
+    app = Flask(__name__)
+    app.config.from_object('app.config.Config')
 
-    # Initialize extensions with the app
-    db.init_app(app)
-    migrate.init_app(app, db)
+    # Register blueprints
+    app.register_blueprint(auth_service_bp)
 
-    # Import and register blueprints
-    from app.routes import auth_bp, main_bp
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(main_bp)
+    # Conditionally register Swagger UI in development environment
+    if app.config['ENV'] == 'development':
+        from flask_swagger_ui import get_swaggerui_blueprint
+        SWAGGER_URL = '/api/docs'
+        API_URL = '/static/swagger.yaml'
+        swaggerui_blueprint = get_swaggerui_blueprint(SWAGGER_URL, API_URL, config={'app_name': "Auth Service"})
+        app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
     return app

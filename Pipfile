@@ -17,5 +17,8 @@ flask-cors = "*"
 jwt = "*"
 requests = "*"
 
+[dev-packages]
+flask-swagger-ui = "*"
+
 [requires]
 python_version = "3.12"

@@ -11,5 +11,5 @@ services:
       - .:/app
     environment:
       - FLASK_APP=app
-      - FLASK_ENV=dev
+      - FLASK_ENV=development
       - FLASK_DEBUG=1

@@ -21,7 +21,7 @@ EXPOSE 5000
 
 # Set environment variables
 ENV FLASK_APP=app
-ENV FLASK_ENV=dev
+ENV FLASK_ENV=development
 ENV FLASK_RUN_HOST=0.0.0.0
 
 # Run the application
