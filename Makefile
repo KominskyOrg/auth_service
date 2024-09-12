@@ -1,39 +1,65 @@
 # Makefile
 
-# Directory where Terraform configurations are located
-TF_DIR = tf
+# Variables
+DOCKER_COMPOSE = docker-compose
+FLAKE8 = flake8
+BLACK = black
 
-# Default goal
-.DEFAULT_GOAL := help
+# Default target
+.PHONY: help
+help:
+	@echo "Usage:"
+	@echo "  make build          Build the Docker images"
+	@echo "  make up             Start the Docker containers"
+	@echo "  make down           Stop the Docker containers"
+	@echo "  make logs           Show logs from the Docker containers"
+	@echo "  make lint           Run flake8 for linting"
+	@echo "  make format         Run black for code formatting"
+	@echo "  make test           Run tests"
+	@echo "  make clean          Clean up Docker containers and images"
 
-# Terraform commands
-init: ## Initialize Terraform, install providers
-	terraform -chdir=$(TF_DIR) init
+.PHONY: up down build logs
 
-validate: ## Validate Terraform files
-	terraform -chdir=$(TF_DIR) validate
+# Bring up all services
+up:
+	docker-compose -f ../devops_admin/docker-compose.yml up --build
 
-fmt: ## Format Terraform files
-	terraform -chdir=$(TF_DIR) fmt -recursive
+# Bring down all services
+down:
+	docker-compose -f ../devops_admin/docker-compose.yml down
 
-plan: ## Plan Terraform changes
-	terraform -chdir=$(TF_DIR) plan
+# Build all services or a specific service
+build:
+	@if [ -z "$(service)" ]; then \
+		docker-compose -f ../devops_admin/docker-compose.yml build; \
+	else \
+		docker-compose -f ../devops_admin/docker-compose.yml build $(service); \
+	fi
 
-apply: ## Apply Terraform changes
-	terraform -chdir=$(TF_DIR) apply
+# View logs for all services or a specific service
+logs:
+	@if [ -z "$(service)" ]; then \
+		docker-compose -f ../devops_admin/docker-compose.yml logs -f; \
+	else \
+		docker-compose -f ../devops_admin/docker-compose.yml logs -f $(service); \
+	fi
 
-destroy: ## Destroy Terraform-managed infrastructure
-	terraform -chdir=$(TF_DIR) destroy
+# Run flake8 for linting
+.PHONY: lint
+lint:
+	$(FLAKE8) .
 
-clean: ## Remove all generated files
-	rm -f $(TF_PLAN_FILE)
+# Run black for code formatting
+.PHONY: format
+format:
+	$(BLACK) .
 
-output: ## Show Terraform outputs
-	terraform -chdir=$(TF_DIR) output
-
+# Run tests
 .PHONY: test
-
 test:
-	@echo "Running tests..."
-	@echo "No tests implemented yet."
-	@exit 0
+	$(DOCKER_COMPOSE) run --rm api pytest
+
+# Clean up Docker containers and images
+.PHONY: clean
+clean:
+	$(DOCKER_COMPOSE) down --rmi all --volumes --remove-orphans

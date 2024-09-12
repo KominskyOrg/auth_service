@@ -2,11 +2,15 @@
 
 from flask import Flask
 from app.routes import auth_service_bp
-import os
+from app.config import get_config
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('app.config.Config')
+    CORS(app)
+
+    # Load configuration
+    app.config.from_object(get_config())
 
     # Register blueprints
     app.register_blueprint(auth_service_bp)

@@ -7,15 +7,12 @@ name = "pypi"
 start = "flask run"
 
 [packages]
-alembic = "*"
 flask = "*"
-flask-sqlalchemy = "*"
 pymysql = "*"
 python-dotenv = "*"
-flask-migrate = "*"
-flask-cors = "*"
-jwt = "*"
 requests = "*"
+flask-cors = "*"
+bcrypt = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"
