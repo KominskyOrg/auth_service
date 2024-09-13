@@ -15,6 +15,7 @@ flask-cors = "*"
 bcrypt = "*"
 alembic = "*"
 mysqlclient = "*"
+pyjwt = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"

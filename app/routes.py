@@ -1,5 +1,4 @@
 from flask import Blueprint, request
-from app.service.utils.crypto import verify_password
 from app.service.auth import (
     login,
     register,
@@ -7,7 +6,7 @@ from app.service.auth import (
     reset_password,
     change_password,
 )
-from app.service.utils.request_handler import handle_request
+from app.utils.request_handler import handle_request
 
 auth_service_bp = Blueprint("auth", __name__, url_prefix="/service/auth")
 
@@ -15,17 +14,14 @@ auth_service_bp = Blueprint("auth", __name__, url_prefix="/service/auth")
 @auth_service_bp.route("/login", methods=["POST"])
 def login_route():
     data = request.json
-    encrypted_password = data.get("password")
-    if encrypted_password:
-        data["password"] = verify_password(encrypted_password)
-    return handle_request(login, data.get("email"), data.get("password"))
+    return handle_request(login, data.get("username"), data.get("password"))
 
 
 @auth_service_bp.route("/register", methods=["POST"])
 def register_route():
     data = request.json
     return handle_request(
-        register, data.get("email"), data.get("password"), data.get("salt")
+        register, data.get("email"), data.get("password"), data.get("first_name"), data.get("last_name"), data.get("username")
     )
 
 
