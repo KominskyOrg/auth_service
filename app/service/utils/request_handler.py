@@ -1,6 +1,7 @@
 import logging
 from flask import jsonify
 
+
 def handle_request(service_function, *args):
     try:
         response, status_code = service_function(*args)

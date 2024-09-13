@@ -2,8 +2,10 @@
 
 # Variables
 DOCKER_COMPOSE = docker-compose
-FLAKE8 = flake8
-BLACK = black
+PIPENV = pipenv run
+FLAKE8 = $(PIPENV) flake8
+BLACK = $(PIPENV) black
+AUTOPEP8 = $(PIPENV) autopep8
 
 # Default target
 .PHONY: help
@@ -14,52 +16,58 @@ help:
 	@echo "  make down           Stop the Docker containers"
 	@echo "  make logs           Show logs from the Docker containers"
 	@echo "  make lint           Run flake8 for linting"
+	@echo "  make lint-fix       Fix linting issues using autopep8"
 	@echo "  make format         Run black for code formatting"
+	@echo "  make format-fix     Fix code formatting using black"
 	@echo "  make test           Run tests"
 	@echo "  make clean          Clean up Docker containers and images"
 
-.PHONY: up down build logs
+.PHONY: up down build logs lint lint-fix format format-fix test clean
 
 # Bring up all services
 up:
-	docker-compose -f ../devops_admin/docker-compose.yml up --build
+	$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml up --build
 
 # Bring down all services
 down:
-	docker-compose -f ../devops_admin/docker-compose.yml down
+	$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml down
 
 # Build all services or a specific service
 build:
 	@if [ -z "$(service)" ]; then \
-		docker-compose -f ../devops_admin/docker-compose.yml build; \
+		$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml build; \
 	else \
-		docker-compose -f ../devops_admin/docker-compose.yml build $(service); \
+		$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml build $(service); \
 	fi
 
 # View logs for all services or a specific service
 logs:
 	@if [ -z "$(service)" ]; then \
-		docker-compose -f ../devops_admin/docker-compose.yml logs -f; \
+		$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml logs -f; \
 	else \
-		docker-compose -f ../devops_admin/docker-compose.yml logs -f $(service); \
+		$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml logs -f $(service); \
 	fi
 
 # Run flake8 for linting
-.PHONY: lint
 lint:
 	$(FLAKE8) .
 
+# Fix linting issues using autopep8
+lint-fix:
+	$(AUTOPEP8) --in-place --aggressive --aggressive -r .
+
 # Run black for code formatting
-.PHONY: format
 format:
 	$(BLACK) .
 
+# Fix code formatting using black
+format-fix:
+	$(BLACK) .
+
 # Run tests
-.PHONY: test
 test:
 	$(DOCKER_COMPOSE) run --rm api pytest
 
 # Clean up Docker containers and images
-.PHONY: clean
 clean:
-	$(DOCKER_COMPOSE) down --rmi all --volumes --remove-orphans
+	$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml down --rmi all --volumes --remove-orphans

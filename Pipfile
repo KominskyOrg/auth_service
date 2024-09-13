@@ -13,9 +13,14 @@ python-dotenv = "*"
 requests = "*"
 flask-cors = "*"
 bcrypt = "*"
+alembic = "*"
+mysqlclient = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"
+black = "*"
+flake8 = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.12"
