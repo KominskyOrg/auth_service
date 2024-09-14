@@ -1,3 +1,5 @@
+from app.models import Base
+from app.config import get_config
 import os
 import sys
 from logging.config import fileConfig
@@ -6,10 +8,9 @@ from sqlalchemy import pool
 from alembic import context
 
 # Ensure the root directory is in the PYTHONPATH
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import the application's configuration
-from app.config import get_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,13 +25,13 @@ app_config = get_config()
 database_url = app_config.SQLALCHEMY_DATABASE_URI
 
 # Set the database URL in Alembic's configuration
-config.set_main_option('sqlalchemy.url', database_url)
+config.set_main_option("sqlalchemy.url", database_url)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from app.models import Base
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -77,9 +78,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

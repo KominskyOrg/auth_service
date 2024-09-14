@@ -5,6 +5,7 @@ from app.service.auth import (
     logout,
     reset_password,
     change_password,
+    deactivate_account,
 )
 from app.utils.request_handler import handle_request
 
@@ -21,7 +22,12 @@ def login_route():
 def register_route():
     data = request.json
     return handle_request(
-        register, data.get("email"), data.get("password"), data.get("first_name"), data.get("last_name"), data.get("username")
+        register,
+        data.get("email"),
+        data.get("password"),
+        data.get("first_name"),
+        data.get("last_name"),
+        data.get("username"),
     )
 
 
@@ -41,4 +47,12 @@ def change_password_route():
     data = request.json
     return handle_request(
         change_password, data.get("old_password"), data.get("new_password")
+    )
+
+
+@auth_service_bp.route("/deactivate-account", methods=["POST"])
+def deactivate_account_route():
+    data = request.json
+    return handle_request(
+        deactivate_account, data.get("username"), data.get("password")
     )

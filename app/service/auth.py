@@ -51,7 +51,7 @@ def register(email, password, first_name, last_name, username):
             first_name=first_name,
             last_name=last_name,
             username=username,
-            is_active=True  # Set is_active to True by default
+            is_active=True
         )
         db.add(new_user)
         db.commit()
@@ -106,3 +106,32 @@ def change_password(old_password, new_password):
         return {"message": "Password changed successfully"}, 200
     else:
         return {"message": "Invalid old password"}, 401
+
+
+def deactivate_account(username, password):
+    try:
+        db = next(get_db())
+        user = db.query(User).filter_by(username=username).first()
+
+        if not user:
+            return {"error": "Invalid username or password"}, 400
+
+        # Retrieve the salt and encrypted password from the database
+        salt = user.salt.encode('utf-8')
+        encrypted_password = user.password.encode('utf-8')
+
+        # Hash the provided password using the retrieved salt
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+
+        # Compare the hashed passwords
+        if hashed_password != encrypted_password:
+            return {"error": "Invalid username or password"}, 400
+
+        # Deactivate the account
+        user.is_active = False
+        db.commit()
+
+        return {"message": "Account deactivated successfully"}, 200
+    except Exception as e:
+        logging.error(f"Error deactivating account: {e}")
+        return {"message": "Internal server error"}, 500

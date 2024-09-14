@@ -6,15 +6,13 @@ from app.config import get_config
 from flask_cors import CORS
 from app.database import init_db
 
+
 def create_app():
     app = Flask(__name__)
     CORS(app)
 
     # Load configuration
     app.config.from_object(get_config())
-
-    # Initialize database
-    from app.database import init_db
 
     init_db(app)
 
