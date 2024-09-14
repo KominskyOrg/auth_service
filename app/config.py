@@ -1,8 +1,17 @@
 import os
+import logging
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Set up logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
 
 
 class Config:
@@ -37,11 +46,25 @@ class ProdConfig(Config):
 
 def get_config():
     env = os.getenv("FLASK_ENV", "local")
+    logger.debug(f"FLASK_ENV: {env}")  # Replaced print with logger.debug
+
     if env == "local":
-        return LocalConfig
+        config = LocalConfig
+        logger.info("Loading LocalConfig")
     elif env == "development":
-        return DevConfig
+        config = DevConfig
+        logger.info("Loading DevConfig")
     elif env == "production":
-        return ProdConfig
+        config = ProdConfig
+        logger.info("Loading ProdConfig")
     else:
+        logger.error(f"Unknown environment: {env}")
         raise ValueError(f"Unknown environment: {env}")
+
+    # Set log level based on environment
+    if env == "production":
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.DEBUG)
+
+    return config
