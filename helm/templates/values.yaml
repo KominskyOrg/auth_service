@@ -1,0 +1,10 @@
+# service-repos/auth_api/helm/values.yaml
+replicaCount: 1
+
+image:
+  repository: your-account-id.dkr.ecr.your-region.amazonaws.com/auth_api
+  tag: latest
+
+env:
+  FLASK_APP: app
+  FLASK_ENV: development

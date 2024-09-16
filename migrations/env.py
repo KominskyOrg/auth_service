@@ -1,5 +1,3 @@
-from app.models import Base
-from app.config import get_config
 import os
 import sys
 from logging.config import fileConfig
@@ -9,6 +7,9 @@ from alembic import context
 
 # Ensure the root directory is in the PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from app.config import get_config
+from app.database import Base
 
 # Import the application's configuration
 
