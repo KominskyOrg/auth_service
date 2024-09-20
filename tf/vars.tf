@@ -21,8 +21,3 @@ variable "db_user_password_special" {
   type        = bool
   default     = true
 }
-
-variable "rds_instance_secrets_name" {
-  description = "Name of the Secrets Manager secret containing the RDS instance credentials."
-  type        = string
-}

@@ -7,7 +7,7 @@ data "aws_db_instance" "database" {
 }
 
 data "aws_secretsmanager_secret" "rds_instance_secrets" {
-  name = var.rds_instance_secrets_name
+  name = data.terraform_remote_state.infrastructure.outputs.db_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "rds_instance_secrets_version" {

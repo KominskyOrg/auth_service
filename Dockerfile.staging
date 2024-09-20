@@ -17,11 +17,11 @@ RUN pip install --no-cache-dir pipenv
 # Copy Pipfile and Pipfile.lock to leverage Docker cache
 COPY Pipfile Pipfile.lock ./
 
-# Install dependencies including development packages
+# Install dependencies including staging packages
 RUN pipenv install --system --dev
 
-# Stage 2: Development Runtime
-FROM python:3.12.2-slim AS development
+# Stage 2: Staging Runtime
+FROM python:3.12.2-slim AS staging
 
 # Set environment variables
 ENV FLASK_APP=app
@@ -54,12 +54,12 @@ RUN chown -R appuser:appgroup /app
 # Switch to the non-root user
 USER appuser
 
-# Expose the development port
+# Expose the staging port
 EXPOSE 5001
 
-# Healthcheck (optional for development)
+# Healthcheck (optional for staging)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5001/service/auth/health || exit 1
 
-# Command to run the application with Flask's development server and hot reloading
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5001", "--reload"]
+# Command to run the application with Flask's staging server
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5001"]

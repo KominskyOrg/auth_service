@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from app.service.auth import (
     login,
     register,
@@ -83,3 +83,11 @@ def deactivate_account_route():
     )
     logger.debug(f"Response: {response}")
     return response
+
+
+@auth_service_bp.route("/health", methods=["GET"])
+def health():
+    """
+    Health check endpoint to verify that the auth_service is running.
+    """
+    return jsonify({"status": "OK"}), 200
