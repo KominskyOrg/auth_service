@@ -1,0 +1,5 @@
+bucket         = "kominskyorg-staging-tf-state"
+key            = "auth_app-staging.tfstate"
+region         = "us-east-1"
+dynamodb_table = "tf-state-lock-staging"
+encrypt        = true
