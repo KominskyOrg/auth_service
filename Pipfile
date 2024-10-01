@@ -16,6 +16,7 @@ bcrypt = "*"
 alembic = "*"
 mysqlclient = "*"
 pyjwt = "*"
+uwsgi = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"

@@ -9,10 +9,7 @@ AUTOPEP8 = $(PIPENV) autopep8
 
 # Terraform Variables
 TF_DIR = tf
-TFVARS_DEV = dev.tfvars
-# TFVARS_DEV_SECRETS = dev.tfvars.secrets
-TFVARS_PROD = prod.tfvars
-# TFVARS_PROD_SECRETS = prod.tfvars.secrets
+ENV = staging
 
 # Default target
 .PHONY: help
@@ -59,6 +56,10 @@ logs:
 		$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml logs -f $(service); \
 	fi
 
+# Clean up Docker containers and images
+clean:
+	$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml down --rmi all --volumes --remove-orphans
+
 # Run flake8 for linting
 lint:
 	$(FLAKE8) .
@@ -79,40 +80,23 @@ format-fix:
 test:
 	$(DOCKER_COMPOSE) run --rm api pytest
 
-# Clean up Docker containers and images
-clean:
-	$(DOCKER_COMPOSE) -f ../devops_admin/docker-compose.yml down --rmi all --volumes --remove-orphans
-
 # Terraform Targets
 
-# Initialize Terraform
-terraform-init:
-	@echo "Initializing Terraform..."
-	cd $(TF_DIR) && terraform init
+# Terraform Targets
+.PHONY: init plan apply destroy
 
-# Run Terraform Plan
-terraform-plan:
-	@echo "Running Terraform plan..."
-	@if [ "$(ENV)" = "prod" ]; then \
-		cd $(TF_DIR) && terraform plan -var-file=$(TFVARS_PROD); \
-	else \
-		cd $(TF_DIR) && terraform plan -var-file=$(TFVARS_DEV); \
-	fi
+init:
+	@echo "Initializing Terraform for $(ENV) environment..."
+	cd $(TF_DIR) && terraform init -backend-config=backend-$(ENV).tfbackend
 
-# Apply Terraform changes
-terraform-apply:
-	@echo "Applying Terraform changes..."
-	@if [ "$(ENV)" = "prod" ]; then \
-		cd $(TF_DIR) && terraform apply -var-file=$(TFVARS_PROD); \
-	else \
-		cd $(TF_DIR) && terraform apply -var-file=$(TFVARS_DEV); \
-	fi
+plan:
+	@echo "Running Terraform plan for $(ENV) environment..."
+	cd $(TF_DIR) && terraform plan -var env=$(ENV)
 
-# Destroy Terraform-managed infrastructure
-terraform-destroy:
-	@echo "Destroying Terraform-managed infrastructure..."
-	@if [ "$(ENV)" = "prod" ]; then \
-		cd $(TF_DIR) && terraform destroy -var-file=$(TFVARS_PROD); \
-	else \
-		cd $(TF_DIR) && terraform destroy -var-file=$(TFVARS_DEV); \
-	fi
+apply:
+	@echo "Applying Terraform changes for $(ENV) environment..."
+	cd $(TF_DIR) && terraform apply -var env=$(ENV)
+
+destroy:
+	@echo "Destroying Terraform-managed infrastructure for $(ENV) environment..."
+	mcd $(TF_DIR) && terraform destroy -var env=$(ENV)

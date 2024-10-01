@@ -25,6 +25,7 @@ FROM python:3.12.2-slim AS staging
 
 # Set environment variables
 ENV FLASK_APP=app
+ENV FLASK_ENV=staging
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
@@ -34,6 +35,8 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    libmariadb3 \
+    default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy system site-packages from builder
@@ -59,7 +62,7 @@ EXPOSE 5001
 
 # Healthcheck (optional for staging)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5001/service/auth/health || exit 1
+  CMD curl -f http://localhost:5001/api/auth/health || exit 1
 
-# Command to run the application with Flask's staging server
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5001"]
+# Run the application with uWSGI
+CMD ["uwsgi", "--ini", "uwsgi.ini"]

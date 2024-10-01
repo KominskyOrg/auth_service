@@ -2,10 +2,9 @@ import os
 import logging
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Set up logging
+# Configure the root logger
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -16,47 +15,63 @@ logger = logging.getLogger(__name__)
 
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    logger.debug("Config base class initialized.")
 
 
-class LocalConfig(Config):
+class DevConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "LOCAL_DATABASE_URL", "mysql://auth_user:auth_password@db:3306/auth_database"
     )
     DEBUG = True
     ENV = "development"
+    logger.debug("DevConfig initialized with DEBUG=True and ENV=development.")
 
 
-class DevConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DEV_DATABASE_URL",
-        "mysql+pymysql://root:auth_password@localhost:3306/dev_database",
-    )
+class StagingConfig(Config):
     DEBUG = True
-    ENV = "development"
+    ENV = "staging"
+
+    DB_USERNAME = os.getenv("db_username")
+    DB_PASSWORD = os.getenv("db_password")
+    DB_NAME = os.getenv("db_name")
+    DB_HOST = os.getenv("db_host")
+    DB_PORT = os.getenv("db_port")
+
+    SQLALCHEMY_DATABASE_URI = (
+        f"mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+    logger.debug("StagingConfig initialized with DEBUG=True and ENV=staging.")
 
 
 class ProdConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "PROD_DATABASE_URL",
-        "mysql+pymysql://root:auth_password@rds_endpoint:3306/prod_database",
-    )
     DEBUG = False
     ENV = "production"
 
+    DB_USERNAME = os.getenv("db_username")
+    DB_PASSWORD = os.getenv("db_password")
+    DB_NAME = os.getenv("db_name")
+    DB_HOST = os.getenv("db_host")
+    DB_PORT = os.getenv("db_port")
+
+    SQLALCHEMY_DATABASE_URI = (
+        f"mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+    logger.debug("ProdConfig initialized with DEBUG=False and ENV=production.")
+
 
 def get_config():
-    env = os.getenv("FLASK_ENV", "local")
-    logger.debug(f"FLASK_ENV: {env}")  # Replaced print with logger.debug
+    env = os.getenv("FLASK_ENV", "development")
+    logger.debug(f"FLASK_ENV: {env}")
 
-    if env == "local":
-        config = LocalConfig
-        logger.info("Loading LocalConfig")
-    elif env == "development":
+    if env == "development":
         config = DevConfig
-        logger.info("Loading DevConfig")
+        logger.info("Loading DevConfig.")
+    elif env == "staging":
+        config = StagingConfig
+        logger.info("Loading StagingConfig.")
     elif env == "production":
         config = ProdConfig
-        logger.info("Loading ProdConfig")
+        logger.info("Loading ProdConfig.")
     else:
         logger.error(f"Unknown environment: {env}")
         raise ValueError(f"Unknown environment: {env}")
@@ -64,7 +79,9 @@ def get_config():
     # Set log level based on environment
     if env == "production":
         logger.setLevel(logging.INFO)
+        logger.info("Log level set to INFO for production.")
     else:
         logger.setLevel(logging.DEBUG)
+        logger.debug(f"Log level set to DEBUG for {env} environment.")
 
     return config

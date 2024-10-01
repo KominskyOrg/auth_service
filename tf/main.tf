@@ -18,15 +18,11 @@ terraform {
   backend "s3" {}
 }
 
-locals {
-  tags = {
-    env     = var.env
-    service = "auth_api"
-  }
-}
-
 provider "aws" {
   region = "us-east-1"
+  default_tags {
+    tags = local.tags
+  }
 }
 
 data "aws_eks_cluster" "cluster" {
@@ -53,7 +49,22 @@ data "terraform_remote_state" "infrastructure" {
   }
 }
 
-module "k8s" {
-  source = "./k8s"
-  env    = var.env
+module "eks" {
+  source = "./eks"
+
+  microservice_name = "${local.stack_name}-${local.microservice_type}"
+  env               = var.env
+  service_ecr_url   = aws_ecr_repository.ecr_repo.repository_url
+  stack_name        = local.stack_name
+  image_tag         = var.image_tag
+}
+
+module "db" {
+  source = "./db"
+
+  manage_db_resources_lambda_arn = data.terraform_remote_state.infrastructure.outputs.manage_db_resources_lambda_arn
+  stack_name                     = local.stack_name
+  env                            = var.env
+  db_host                        = data.terraform_remote_state.infrastructure.outputs.db_host
+  db_port                        = data.terraform_remote_state.infrastructure.outputs.db_port
 }

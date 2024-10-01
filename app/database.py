@@ -11,7 +11,6 @@ Base = declarative_base()
 
 
 def init_db(app):
-    # Read the DATABASE_URL from the app configuration
     database_url = app.config["SQLALCHEMY_DATABASE_URI"]
     logger.info("Initializing database")
     logger.debug(f"Database URL: {database_url}")
@@ -29,9 +28,6 @@ def init_db(app):
     db_session = scoped_session(SessionLocal)
     logger.info("Scoped session created")
 
-    # Import all modules here that might define models so that
-    # they will be registered properly on the metadata. Otherwise,
-    # you will have to import them first before calling init_db()
     import app.models
 
     logger.info("Models imported")
