@@ -17,6 +17,7 @@ alembic = "*"
 mysqlclient = "*"
 pyjwt = "*"
 uwsgi = "*"
+marshmallow = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"

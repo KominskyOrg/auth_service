@@ -1,22 +1,26 @@
+# app/db.py
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.exc import SQLAlchemyError
 import logging
+from contextlib import contextmanager
+import os
 
 # Get the logger
 logger = logging.getLogger(__name__)
 
-# Base class for our classes definitions
+# Base class for our class definitions
 Base = declarative_base()
 
-
 def init_db(app):
-    database_url = app.config["SQLALCHEMY_DATABASE_URI"]
+    database_url = os.getenv("DATABASE_URL", "sqlite:///./test.db")
     logger.info("Initializing database")
     logger.debug(f"Database URL: {database_url}")
 
     # Create the SQLAlchemy engine
-    engine = create_engine(database_url)
+    engine = create_engine(database_url, pool_pre_ping=True)
     logger.info("SQLAlchemy engine created")
 
     # Create a configured "Session" class
@@ -28,20 +32,27 @@ def init_db(app):
     db_session = scoped_session(SessionLocal)
     logger.info("Scoped session created")
 
-    import app.models
+    import app.models  # Import models to reflect schema in the database
 
     logger.info("Models imported")
-
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
 
 
-# Dependency to get the database session
+@contextmanager
 def get_db():
+    """
+    Provides a database session for a request.
+    Closes the session when done.
+    """
     logger.debug("Getting database session")
     db = db_session()
     try:
         yield db
+    except SQLAlchemyError as e:
+        logger.error(f"Database session rollback due to error: {e}")
+        db.rollback()
+        raise
     finally:
         db.close()
         logger.debug("Database session closed")

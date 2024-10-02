@@ -4,12 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure the root logger
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],
-)
 logger = logging.getLogger(__name__)
 
 

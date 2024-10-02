@@ -1,48 +1,37 @@
 import logging
-import re
 import bcrypt
 from app.models import User
 from app.database import get_db
 from app.service.jwt import generate_jwt
+from app.utils.exceptions import ValidationError, AuthenticationError, AuthorizationError, DatabaseError
+from app.schemas.auth_schemas import RegisterSchema, LoginSchema, ResetPasswordSchema, ChangePasswordSchema, DeactivateAccountSchema
+from sqlalchemy.exc import SQLAlchemyError
 
 # Get the logger
 logger = logging.getLogger(__name__)
 
-
-def validate_email(email):
-    email_regex = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
-    is_valid = re.match(email_regex, email) is not None
-    logger.debug(f"Validating email: {email}, Valid: {is_valid}")
-    return is_valid
-
-
-def validate_name(name):
-    name_regex = r"^[a-zA-Z]+$"
-    is_valid = re.match(name_regex, name) is not None
-    logger.debug(f"Validating name: {name}, Valid: {is_valid}")
-    return is_valid
-
-
-def register(email, password, first_name, last_name, username):
+def register(*args, db=None, **kwargs):
+    schema = RegisterSchema()
     try:
-        db = next(get_db())
-        logger.info("Registering new user")
-        logger.debug(
-            f"""
-            User details: email={email},
-            first_name={first_name},
-            last_name={last_name},
-            username={username}
-            """
-        )
+        data = schema.load({
+            "email": args[0],
+            "password": args[1],
+            "first_name": args[2],
+            "last_name": args[3],
+            "username": args[4],
+        })
+    except ValidationError as ve:
+        raise ValidationError(ve.messages)
 
-        # Validate email and name formats
-        if not validate_email(email):
-            logger.warning("Invalid email format")
-            return {"message": "Invalid email format"}, 400
-        if not validate_name(first_name) or not validate_name(last_name):
-            logger.warning("Invalid name format")
-            return {"message": "Names can only contain letters"}, 400
+    email = data['email']
+    password = data['password']
+    first_name = data['first_name']
+    last_name = data['last_name']
+    username = data['username']
+
+    try:
+        logger.info("Registering new user")
+        logger.debug(f"User details: email={email}, username={username}")
 
         # Check if the email or username is already in use
         existing_user = (
@@ -53,7 +42,7 @@ def register(email, password, first_name, last_name, username):
         if existing_user:
             if existing_user.is_active:
                 logger.warning("Email or username is already in use")
-                return {"message": "Email or username is already in use"}, 400
+                raise ValidationError({"message": "Email or username is already in use"})
             else:
                 # Reactivate the existing user
                 logger.info("Reactivating existing user")
@@ -86,25 +75,41 @@ def register(email, password, first_name, last_name, username):
         db.commit()
         logger.info("Registration successful")
         return {"message": "Registration successful"}, 201
+    except SQLAlchemyError as db_err:
+        logger.error(f"Database error during registration: {db_err}", exc_info=True)
+        db.rollback()
+        raise DatabaseError()
+    except ValidationError as ve:
+        raise ve
     except Exception as e:
-        logger.error(f"Error registering user: {e}", exc_info=True)
-        return {"message": "Internal server error"}, 500
+        logger.exception(f"Error registering user: {e}")
+        raise
 
-
-def login(username, password):
+def login(*args, db=None, **kwargs):
+    schema = LoginSchema()
     try:
-        db = next(get_db())
+        data = schema.load({
+            "username": args[0],
+            "password": args[1],
+        })
+    except ValidationError as ve:
+        raise ValidationError(ve.messages)
+
+    username = data['username']
+    password = data['password']
+
+    try:
         logger.info("Login attempt")
         logger.debug(f"Username: {username}")
 
         user = db.query(User).filter_by(username=username).first()
         if not user:
             logger.warning("Invalid username or password")
-            return {"message": "Invalid username or password"}, 401
+            raise AuthenticationError("Invalid username or password")
 
         if not user.is_active:
             logger.warning("User account is inactive")
-            return {"message": "User account is inactive"}, 403
+            raise AuthorizationError("User account is inactive")
 
         # Retrieve the salt and encrypted password from the database
         salt = user.salt.encode("utf-8")
@@ -114,16 +119,39 @@ def login(username, password):
         hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
 
         # Compare the hashed passwords
-        if hashed_password == encrypted_password:
-            token = generate_jwt(user.id)
-            logger.info("Login successful")
-            return {"message": "Login successful", "token": token}, 200
-        else:
+        if hashed_password != encrypted_password:
             logger.warning("Invalid username or password")
-            return {"message": "Invalid username or password"}, 401
+            raise AuthenticationError("Invalid username or password")
+
+        token = generate_jwt(user.id)
+        if not token:
+            logger.error("Failed to generate JWT")
+            raise Exception("JWT generation failed")
+
+        logger.info("Login successful")
+        return {"message": "Login successful", "token": token}, 200
+    except (AuthenticationError, AuthorizationError) as ae:
+        raise ae
+    except SQLAlchemyError as db_err:
+        logger.error(f"Database error during login: {db_err}", exc_info=True)
+        raise DatabaseError()
     except Exception as e:
-        logger.error(f"Error logging in user: {e}", exc_info=True)
-        return {"message": "Internal server error"}, 500
+        logger.exception(f"Error logging in user: {e}")
+        raise
+
+
+def validate_email(email):
+    email_regex = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
+    is_valid = re.match(email_regex, email) is not None
+    logger.debug(f"Validating email: {email}, Valid: {is_valid}")
+    return is_valid
+
+
+def validate_name(name):
+    name_regex = r"^[a-zA-Z]+$"
+    is_valid = re.match(name_regex, name) is not None
+    logger.debug(f"Validating name: {name}, Valid: {is_valid}")
+    return is_valid
 
 
 def logout():
