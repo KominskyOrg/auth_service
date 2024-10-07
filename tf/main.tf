@@ -50,8 +50,7 @@ data "terraform_remote_state" "infrastructure" {
 }
 
 module "eks" {
-  source           = "../../kom_tf_modules/eks"
-  # source           = "git::https://github.com/KominskyOrg/kom_tf_modules.git//eks?ref=v1.4"
+  source           = "git::https://github.com/KominskyOrg/kom_tf_modules.git//eks?ref=v1.5"
   eks_service_name = "${local.stack_name}-${local.microservice_type}"
   env              = local.env
   ecr_url          = aws_ecr_repository.app_ecr.repository_url
@@ -70,8 +69,7 @@ module "eks" {
 
 
 module "db" {
-  source = "../../kom_tf_modules/db"
-  # source = "git::https://github.com/KominskyOrg/kom_tf_modules.git//db?ref=v1.4"
+  source = "git::https://github.com/KominskyOrg/kom_tf_modules.git//db?ref=v1.5"
 
   manage_db_resources_lambda_arn = data.terraform_remote_state.infrastructure.outputs.manage_db_resources_lambda_arn
   stack_name                     = local.stack_name
