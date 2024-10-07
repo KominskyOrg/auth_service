@@ -1,6 +1,7 @@
 # Makefile
 
 # Variables
+REPO_NAME = auth_service
 DOCKER_COMPOSE = docker-compose
 PIPENV = pipenv run
 FLAKE8 = $(PIPENV) flake8
@@ -80,23 +81,44 @@ format-fix:
 test:
 	$(DOCKER_COMPOSE) run --rm api pytest
 
-# Terraform Targets
+# Variables
+ENV ?= staging
+BACKEND_DIR ?= ./tf
+AWS_REGION ?= us-east-1
+IMAGE_TAG ?= $(shell git rev-parse --short HEAD)
+AWS_ACCOUNT_ID ?= $(AWS_ACCOUNT_ID)
+ECR_REPO := $(REPO_NAME)_$(ENV)
 
-# Terraform Targets
-.PHONY: init plan apply destroy
+.PHONY: init plan build push ecr-login
 
+# Initialize Terraform
 init:
 	@echo "Initializing Terraform for $(ENV) environment..."
-	cd $(TF_DIR) && terraform init -backend-config=backend-$(ENV).tfbackend
+	cd $(BACKEND_DIR) && terraform init -var env=$(ENV) -backend-config=backend-$(ENV).tfbackend
 
+# Generate Terraform Plan
 plan:
-	@echo "Running Terraform plan for $(ENV) environment..."
-	cd $(TF_DIR) && terraform plan -var env=$(ENV)
+	@echo "Generating Terraform plan for $(ENV) environment..."
+	cd $(BACKEND_DIR) && terraform plan -out=tfplan -var env=$(ENV) -var image_tag=$(IMAGE_TAG)
 
+# Generate Terraform Apply
 apply:
-	@echo "Applying Terraform changes for $(ENV) environment..."
-	cd $(TF_DIR) && terraform apply -var env=$(ENV)
+	@echo "Generating Terraform apply for $(ENV) environment..."
+	cd $(BACKEND_DIR) && terraform apply tfplan
 
-destroy:
-	@echo "Destroying Terraform-managed infrastructure for $(ENV) environment..."
-	mcd $(TF_DIR) && terraform destroy -var env=$(ENV)
+# Build Docker Image
+build:
+	@echo "Building Docker image $(ECR_REPO):$(IMAGE_TAG)..."
+	docker build -t $(ECR_REPO):$(IMAGE_TAG) -f Dockerfile.$(ENV) .
+
+# Authenticate Docker to Amazon ECR
+ecr-login:
+	@echo "Logging into Amazon ECR..."
+	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+
+# Push Docker Image to ECR
+push: ecr-login build
+	@echo "Tagging Docker image..."
+	docker tag $(ECR_REPO):$(IMAGE_TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(ECR_REPO):$(IMAGE_TAG)
+	@echo "Pushing Docker image to ECR..."
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(ECR_REPO):$(IMAGE_TAG)

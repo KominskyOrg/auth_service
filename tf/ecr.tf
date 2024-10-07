@@ -1,8 +1,10 @@
-resource "aws_ecr_repository" "ecr_repo" {
-  name                 = "${local.stack_name}_${local.microservice_type}_${var.env}"
+resource "aws_ecr_repository" "app_ecr" {
+  name                 = "${local.service_name}_${local.env}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
+
+  tags = local.tags
 }
