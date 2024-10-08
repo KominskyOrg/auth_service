@@ -180,9 +180,20 @@ def change_password(old_password, new_password):
         return {"message": "Invalid old password"}, 401
 
 
-def deactivate_account(username, password):
+def deactivate_account(username, password, db=None):
+    schema = DeactivateAccountSchema()
     try:
-        db = next(get_db())
+        data = schema.load({
+            "username": username,
+            "password": password,
+        })
+    except ValidationError as ve:
+        raise ve
+    
+    username = data['username']
+    password = data['password']
+
+    try:
         logger.info("Deactivate account request received")
         logger.debug(f"Username: {username}")
 
