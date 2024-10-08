@@ -63,8 +63,8 @@ module "eks" {
   env_from_secrets = [
     "${local.env}-${local.stack_name}-db-credentials"
   ]
-  readiness_probe_path = "/${local.microservice_type}/${local.stack_name}/health"
-  liveness_probe_path  = "/${local.microservice_type}/${local.stack_name}/health"
+  readiness_probe_path = "/health"
+  liveness_probe_path  = "/health"
 }
 
 
