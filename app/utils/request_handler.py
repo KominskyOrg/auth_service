@@ -13,8 +13,8 @@ def handle_request(service_function, *args, **kwargs):
         logger.debug(f"Service function response: {response}, Status code: {status_code}")
         return jsonify(response), status_code
     except ValidationError as ve:
-        logger.warning(f"Validation error in {service_function.__name__}: {ve.messages}")
-        return jsonify({"error": ve.messages}), 400
+        logger.warning(f"Validation error in {service_function.__name__}: {ve.message}")
+        return jsonify({"error": ve.message}), 400
     except AuthenticationError as ae:
         logger.warning(f"Authentication error in {service_function.__name__}: {ae.message}")
         return jsonify({"error": ae.message}), 401

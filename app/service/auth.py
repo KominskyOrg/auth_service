@@ -21,7 +21,7 @@ def register(*args, db=None, **kwargs):
             "username": args[4],
         })
     except ValidationError as ve:
-        raise ValidationError(ve.messages)
+        raise ValidationError(ve.message)
 
     email = data['email']
     password = data['password']
@@ -92,7 +92,7 @@ def login(*args, db=None, **kwargs):
             "password": args[1],
         })
     except ValidationError as ve:
-        raise ValidationError(ve.messages)
+        raise ValidationError(ve.message)
 
     username = data['username']
     password = data['password']
