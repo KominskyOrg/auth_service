@@ -64,12 +64,11 @@ def register(*args, db=None, **kwargs):
         # Create a new user and add to the database
         new_user = User(
             email=email,
-            password=hashed_password.decode("utf-8"),
+            username=username,
+            hashed_password=hashed_password.decode("utf-8"),
             salt=salt.decode("utf-8"),
             first_name=first_name,
             last_name=last_name,
-            username=username,
-            is_active=True,
         )
         db.add(new_user)
         db.commit()
