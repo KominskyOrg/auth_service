@@ -17,7 +17,7 @@ from sqlalchemy.exc import SQLAlchemyError
 # Get the logger
 logger = logging.getLogger(__name__)
 
-auth_service_bp = Blueprint("auth", __name__, url_prefix="/service/auth")
+auth_service_bp = Blueprint("auth", __name__)
 
 @auth_service_bp.route("/login", methods=["POST"])
 def login_route():
