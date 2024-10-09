@@ -8,6 +8,7 @@ from app.config import get_config
 from app.database import init_db
 import os
 
+
 def create_app():
     app = Flask(__name__)
 
@@ -55,7 +56,7 @@ def setup_logging(app):
 
     # Define a detailed log format
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     stream_handler.setFormatter(formatter)
 
@@ -65,7 +66,7 @@ def setup_logging(app):
 
     # Optionally, add file logging for production
     if app.config.get("ENV") == "production":
-        file_handler = logging.FileHandler('app.log')
+        file_handler = logging.FileHandler("app.log")
         file_handler.setLevel(logging.WARNING)
         file_handler.setFormatter(formatter)
         app.logger.addHandler(file_handler)
@@ -82,9 +83,7 @@ def register_swagger_ui(app, logger):
         API_URL = "/static/swagger.yaml"
 
         swaggerui_blueprint = get_swaggerui_blueprint(
-            SWAGGER_URL,
-            API_URL,
-            config={"app_name": "Auth Service"}
+            SWAGGER_URL, API_URL, config={"app_name": "Auth Service"}
         )
         app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
         logger.info("Swagger UI has been registered at %s.", SWAGGER_URL)

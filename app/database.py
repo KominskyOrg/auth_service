@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 # Base class for our class definitions
 Base = declarative_base()
 
+
 def init_db(app):
     database_url = os.getenv("DATABASE_URL", "sqlite:///./test.db")
     logger.info("Initializing database")

@@ -3,31 +3,45 @@ import bcrypt
 from app.models import User
 from app.database import get_db
 from app.service.jwt import generate_jwt
-from app.utils.exceptions import ValidationError, AuthenticationError, AuthorizationError, DatabaseError
-from app.schemas.auth_schemas import RegisterSchema, LoginSchema, ResetPasswordSchema, ChangePasswordSchema, DeactivateAccountSchema
+from app.utils.exceptions import (
+    ValidationError,
+    AuthenticationError,
+    AuthorizationError,
+    DatabaseError,
+)
+from app.schemas.auth_schemas import (
+    RegisterSchema,
+    LoginSchema,
+    ResetPasswordSchema,
+    ChangePasswordSchema,
+    DeactivateAccountSchema,
+)
 from sqlalchemy.exc import SQLAlchemyError
 
 # Get the logger
 logger = logging.getLogger(__name__)
 
+
 def register(*args, db=None, **kwargs):
     schema = RegisterSchema()
     try:
-        data = schema.load({
-            "email": args[0],
-            "password": args[1],
-            "first_name": args[2],
-            "last_name": args[3],
-            "username": args[4],
-        })
+        data = schema.load(
+            {
+                "email": args[0],
+                "password": args[1],
+                "first_name": args[2],
+                "last_name": args[3],
+                "username": args[4],
+            }
+        )
     except ValidationError as ve:
         raise ValidationError(ve.message)
 
-    email = data['email']
-    password = data['password']
-    first_name = data['first_name']
-    last_name = data['last_name']
-    username = data['username']
+    email = data["email"]
+    password = data["password"]
+    first_name = data["first_name"]
+    last_name = data["last_name"]
+    username = data["username"]
 
     try:
         logger.info("Registering new user")
@@ -42,7 +56,9 @@ def register(*args, db=None, **kwargs):
         if existing_user:
             if existing_user.is_active:
                 logger.warning("Email or username is already in use")
-                raise ValidationError({"message": "Email or username is already in use"})
+                raise ValidationError(
+                    {"message": "Email or username is already in use"}
+                )
             else:
                 # Reactivate the existing user
                 logger.info("Reactivating existing user")
@@ -84,18 +100,21 @@ def register(*args, db=None, **kwargs):
         logger.exception(f"Error registering user: {e}")
         raise
 
+
 def login(*args, db=None, **kwargs):
     schema = LoginSchema()
     try:
-        data = schema.load({
-            "username": args[0],
-            "password": args[1],
-        })
+        data = schema.load(
+            {
+                "username": args[0],
+                "password": args[1],
+            }
+        )
     except ValidationError as ve:
         raise ValidationError(ve.message)
 
-    username = data['username']
-    password = data['password']
+    username = data["username"]
+    password = data["password"]
 
     try:
         logger.info("Login attempt")
@@ -183,15 +202,17 @@ def change_password(old_password, new_password):
 def deactivate_account(username, password, db=None):
     schema = DeactivateAccountSchema()
     try:
-        data = schema.load({
-            "username": username,
-            "password": password,
-        })
+        data = schema.load(
+            {
+                "username": username,
+                "password": password,
+            }
+        )
     except ValidationError as ve:
         raise ve
-    
-    username = data['username']
-    password = data['password']
+
+    username = data["username"]
+    password = data["password"]
 
     try:
         logger.info("Deactivate account request received")

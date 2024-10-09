@@ -1,25 +1,37 @@
 import logging
 from flask import jsonify
 from marshmallow import ValidationError
-from app.utils.exceptions import ValidationError, AuthenticationError, AuthorizationError, DatabaseError
+from app.utils.exceptions import (
+    ValidationError,
+    AuthenticationError,
+    AuthorizationError,
+    DatabaseError,
+)
 
 logger = logging.getLogger(__name__)
+
 
 def handle_request(service_function, *args, **kwargs):
     logger.info(f"Handling request for {service_function.__name__}")
     logger.debug(f"Arguments: args={args}, kwargs={kwargs}")
     try:
         response, status_code = service_function(*args, **kwargs)
-        logger.debug(f"Service function response: {response}, Status code: {status_code}")
+        logger.debug(
+            f"Service function response: {response}, Status code: {status_code}"
+        )
         return jsonify(response), status_code
     except ValidationError as ve:
         logger.warning(f"Validation error in {service_function.__name__}: {ve.message}")
         return jsonify({"error": ve.message}), 400
     except AuthenticationError as ae:
-        logger.warning(f"Authentication error in {service_function.__name__}: {ae.message}")
+        logger.warning(
+            f"Authentication error in {service_function.__name__}: {ae.message}"
+        )
         return jsonify({"error": ae.message}), 401
     except AuthorizationError as aze:
-        logger.warning(f"Authorization error in {service_function.__name__}: {aze.message}")
+        logger.warning(
+            f"Authorization error in {service_function.__name__}: {aze.message}"
+        )
         return jsonify({"error": aze.message}), 403
     except DatabaseError as de:
         logger.error(f"Database error in {service_function.__name__}: {de}")
