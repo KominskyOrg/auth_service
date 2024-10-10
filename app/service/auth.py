@@ -1,5 +1,6 @@
 import logging
 import bcrypt
+import re
 from app.models import User
 from app.database import get_db
 from app.service.jwt import generate_jwt
@@ -62,9 +63,10 @@ def register(*args, db=None, **kwargs):
             else:
                 # Reactivate the existing user
                 logger.info("Reactivating existing user")
-                existing_user.password = bcrypt.hashpw(
+                hashed_password = bcrypt.hashpw(
                     password.encode("utf-8"), bcrypt.gensalt()
                 ).decode("utf-8")
+                existing_user.password = hashed_password
                 existing_user.first_name = first_name
                 existing_user.last_name = last_name
                 existing_user.username = username
@@ -73,16 +75,16 @@ def register(*args, db=None, **kwargs):
                 logger.info("Account reactivated successfully")
                 return {"message": "Account reactivated successfully"}, 200
 
-        # Encrypt the password
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
+        # Hash the password (bcrypt automatically handles the salt)
+        hashed_password = bcrypt.hashpw(
+            password.encode("utf-8"), bcrypt.gensalt()
+        ).decode("utf-8")
 
         # Create a new user and add to the database
         new_user = User(
             email=email,
             username=username,
-            hashed_password=hashed_password.decode("utf-8"),
-            salt=salt.decode("utf-8"),
+            password=hashed_password,
             first_name=first_name,
             last_name=last_name,
         )
@@ -129,15 +131,11 @@ def login(*args, db=None, **kwargs):
             logger.warning("User account is inactive")
             raise AuthorizationError("User account is inactive")
 
-        # Retrieve the salt and encrypted password from the database
-        salt = user.salt.encode("utf-8")
-        encrypted_password = user.password.encode("utf-8")
+        # Retrieve the hashed password from the database
+        hashed_password = user.password.encode("utf-8")
 
-        # Hash the provided password using the retrieved salt
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
-
-        # Compare the hashed passwords
-        if hashed_password != encrypted_password:
+        # Use bcrypt to check the password
+        if not bcrypt.checkpw(password.encode("utf-8"), hashed_password):
             logger.warning("Invalid username or password")
             raise AuthenticationError("Invalid username or password")
 
@@ -152,6 +150,7 @@ def login(*args, db=None, **kwargs):
         raise ae
     except SQLAlchemyError as db_err:
         logger.error(f"Database error during login: {db_err}", exc_info=True)
+        db.rollback()
         raise DatabaseError()
     except Exception as e:
         logger.exception(f"Error logging in user: {e}")
@@ -159,7 +158,7 @@ def login(*args, db=None, **kwargs):
 
 
 def validate_email(email):
-    email_regex = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
+    email_regex = r"^[A-Za-z0-9]+([._+-][A-Za-z0-9]+)*@[A-Za-z0-9-]+\.[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$"
     is_valid = re.match(email_regex, email) is not None
     logger.debug(f"Validating email: {email}, Valid: {is_valid}")
     return is_valid
@@ -224,15 +223,12 @@ def deactivate_account(username, password, db=None):
             logger.warning("Invalid username or password")
             return {"error": "Invalid username or password"}, 400
 
-        # Retrieve the salt and encrypted password from the database
-        salt = user.salt.encode("utf-8")
-        encrypted_password = user.password.encode("utf-8")
+        if not user.is_active:
+            logger.warning("User account is already inactive")
+            return {"error": "User account is already inactive"}, 400
 
-        # Hash the provided password using the retrieved salt
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
-
-        # Compare the hashed passwords
-        if hashed_password != encrypted_password:
+        # Use bcrypt to check the password
+        if not bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
             logger.warning("Invalid username or password")
             return {"error": "Invalid username or password"}, 400
 

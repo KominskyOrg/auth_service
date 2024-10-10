@@ -18,6 +18,7 @@ mysqlclient = "*"
 pyjwt = "*"
 uwsgi = "*"
 marshmallow = "*"
+pytest-flask = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"

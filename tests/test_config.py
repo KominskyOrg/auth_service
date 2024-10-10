@@ -6,62 +6,66 @@ import importlib
 import sys
 
 
-@pytest.mark.parametrize("env_vars,expected_uri,expected_debug,expected_env", [
-    (
-        # DevConfig with LOCAL_DATABASE_URL set
-        {
-            "FLASK_ENV": "development",
-            "LOCAL_DATABASE_URL": "mysql://dev_user:dev_pass@localhost:3306/dev_db",
-        },
-        "mysql://dev_user:dev_pass@localhost:3306/dev_db",
-        True,
-        "development",
-    ),
-    (
-        # DevConfig without LOCAL_DATABASE_URL set (should use default)
-        {
-            "FLASK_ENV": "development",
-            # No LOCAL_DATABASE_URL provided
-        },
-        "mysql://auth_user:auth_password@db:3306/auth_database",
-        True,
-        "development",
-    ),
-    (
-        # StagingConfig with all required environment variables set
-        {
-            "FLASK_ENV": "staging",
-            "db_username": "staging_user",
-            "db_password": "staging_pass",
-            "db_name": "staging_db",
-            "db_host": "staging_host",
-            "db_port": "3307",
-        },
-        "mysql+pymysql://staging_user:staging_pass@staging_host:3307/staging_db",
-        True,
-        "staging",
-    ),
-    (
-        # ProdConfig with all required environment variables set
-        {
-            "FLASK_ENV": "production",
-            "db_username": "prod_user",
-            "db_password": "prod_pass",
-            "db_name": "prod_db",
-            "db_host": "prod_host",
-            "db_port": "3308",
-        },
-        "mysql+pymysql://prod_user:prod_pass@prod_host:3308/prod_db",
-        False,
-        "production",
-    ),
-])
+@pytest.mark.parametrize(
+    "env_vars,expected_uri,expected_debug,expected_env",
+    [
+        (
+            # DevConfig with LOCAL_DATABASE_URL set
+            {
+                "FLASK_ENV": "development",
+                "LOCAL_DATABASE_URL": "mysql://dev_user:dev_pass@localhost:3306/dev_db",
+            },
+            "mysql://dev_user:dev_pass@localhost:3306/dev_db",
+            True,
+            "development",
+        ),
+        (
+            # DevConfig without LOCAL_DATABASE_URL set (should use default)
+            {
+                "FLASK_ENV": "development",
+                # No LOCAL_DATABASE_URL provided
+            },
+            "mysql://auth_user:auth_password@db:3306/auth_database",
+            True,
+            "development",
+        ),
+        (
+            # StagingConfig with all required environment variables set
+            {
+                "FLASK_ENV": "staging",
+                "db_username": "staging_user",
+                "db_password": "staging_pass",
+                "db_name": "staging_db",
+                "db_host": "staging_host",
+                "db_port": "3307",
+            },
+            "mysql+pymysql://staging_user:staging_pass@staging_host:3307/staging_db",
+            True,
+            "staging",
+        ),
+        (
+            # ProdConfig with all required environment variables set
+            {
+                "FLASK_ENV": "production",
+                "db_username": "prod_user",
+                "db_password": "prod_pass",
+                "db_name": "prod_db",
+                "db_host": "prod_host",
+                "db_port": "3308",
+            },
+            "mysql+pymysql://prod_user:prod_pass@prod_host:3308/prod_db",
+            False,
+            "production",
+        ),
+    ],
+)
 def test_configuration(env_vars, expected_uri, expected_debug, expected_env):
     """
     Test configuration classes based on environment variables.
     """
     with patch.dict("os.environ", env_vars, clear=True):
         import app.config
+
         importlib.reload(app.config)
         from app.config import Config, DevConfig, StagingConfig, ProdConfig
 
@@ -93,6 +97,7 @@ def test_get_config_development():
     }
     with patch.dict("os.environ", env_vars, clear=True):
         import app.config
+
         importlib.reload(app.config)
         from app.config import get_config, DevConfig
 
@@ -114,6 +119,7 @@ def test_get_config_staging():
     }
     with patch.dict("os.environ", env_vars, clear=True):
         import app.config
+
         importlib.reload(app.config)
         from app.config import get_config, StagingConfig
 
@@ -135,6 +141,7 @@ def test_get_config_production():
     }
     with patch.dict("os.environ", env_vars, clear=True):
         import app.config
+
         importlib.reload(app.config)
         from app.config import get_config, ProdConfig
 
@@ -151,6 +158,7 @@ def test_get_config_unknown_env():
     }
     with patch.dict("os.environ", env_vars, clear=True):
         import app.config
+
         importlib.reload(app.config)
         from app.config import get_config
 

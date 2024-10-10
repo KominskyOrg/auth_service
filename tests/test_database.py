@@ -3,12 +3,6 @@ from unittest.mock import patch, MagicMock, ANY
 from app.database import init_db, get_db, Base
 from sqlalchemy.exc import SQLAlchemyError
 import os
-import sys
-
-# -------------------- Mocking app.models -------------------- #
-
-# Insert a mock for 'app.models' into sys.modules
-# sys.modules['app.models'] = MagicMock()
 
 # -------------------- init_db Tests -------------------- #
 

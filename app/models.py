@@ -16,18 +16,16 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)
-    salt = Column(String, nullable=False)
+    password = Column(String, nullable=False)  # This will store the hashed password
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    def __init__(self, email, username, hashed_password, salt, first_name, last_name):
+    def __init__(self, email, username, password, first_name, last_name):
         self.email = email
         self.username = username
-        self.password = hashed_password
-        self.salt = salt
+        self.password = password  # Already hashed
         self.first_name = first_name
         self.last_name = last_name
         self.is_active = True

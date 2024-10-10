@@ -16,8 +16,7 @@ def test_user_initialization(caplog):
     # Arrange
     email = "test@example.com"
     username = "testuser"
-    hashed_password = "hashed_password"
-    salt = "random_salt"
+    password = "password"
     first_name = "Test"
     last_name = "User"
 
@@ -28,8 +27,7 @@ def test_user_initialization(caplog):
     user = User(
         email=email,
         username=username,
-        hashed_password=hashed_password,
-        salt=salt,
+        password=password,
         first_name=first_name,
         last_name=last_name,
     )
@@ -37,8 +35,7 @@ def test_user_initialization(caplog):
     # Assert
     assert user.email == email
     assert user.username == username
-    assert user.password == hashed_password
-    assert user.salt == salt
+    assert user.password == password
     assert user.first_name == first_name
     assert user.last_name == last_name
     assert user.is_active is True
@@ -61,8 +58,7 @@ def test_user_set_password(caplog):
     user = User(
         email="test@example.com",
         username="testuser",
-        hashed_password="hashed_pw",
-        salt="salt",
+        password="hashed_pw",
         first_name="Test",
         last_name="User",
     )
@@ -94,8 +90,7 @@ def test_user_to_dict_with_created_at(caplog):
     user = User(
         email="test@example.com",
         username="testuser",
-        hashed_password="hashed_pw",
-        salt="salt",
+        password="hashed_pw",
         first_name="Test",
         last_name="User",
     )
@@ -133,8 +128,7 @@ def test_user_to_dict_without_created_at(caplog):
     user = User(
         email="test@example.com",
         username="testuser",
-        hashed_password="hashed_pw",
-        salt="salt",
+        password="hashed_pw",
         first_name="Test",
         last_name="User",
     )
@@ -174,8 +168,7 @@ def test_user_set_password_with_logging(caplog):
     user = User(
         email="test@example.com",
         username="testuser",
-        hashed_password="hashed_pw",
-        salt="salt",
+        password="hashed_pw",
         first_name="Test",
         last_name="User",
     )
@@ -200,8 +193,7 @@ def test_user_initialization_logging(caplog):
     # Arrange
     email = "another_test@example.com"
     username = "anotheruser"
-    hashed_password = "another_hashed_pw"
-    salt = "another_salt"
+    password = "another_hashed_pw"
     first_name = "Another"
     last_name = "User"
 
@@ -212,8 +204,7 @@ def test_user_initialization_logging(caplog):
     user = User(
         email=email,
         username=username,
-        hashed_password=hashed_password,
-        salt=salt,
+        password=password,
         first_name=first_name,
         last_name=last_name,
     )
