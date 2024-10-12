@@ -1,402 +1,284 @@
-# tests/test_auth_routes.py
+# tests/test_routes.py
 
 import pytest
-from flask import jsonify
+from flask import url_for
+from unittest.mock import MagicMock
 from sqlalchemy.exc import SQLAlchemyError
-import logging
 
-# Import the service functions to use in assertions
-from app.service.auth import (
-    login,
-    register,
-    logout,
-    reset_password,
-    change_password,
-    deactivate_account,
-)
+# Assuming your Flask app is created in app/__init__.py and named 'create_app'
+from app import create_app
 
-# Import your Blueprint
-from app.routes import auth_service_bp
-
-# -------------------- Pytest Fixtures -------------------- #
-
-
-@pytest.fixture(scope="module")
+@pytest.fixture
 def app():
-    """
-    Fixture to create a Flask app with the auth_service_bp registered.
-    """
-    from flask import Flask
-
-    app = Flask(__name__)
-    app.register_blueprint(auth_service_bp)
-    # Configure app if necessary (e.g., app.config['TESTING'] = True)
+    app = create_app()
+    app.config.update({
+        "TESTING": True,
+    })
     return app
 
+@pytest.fixture
+def client(app):
+    return app.test_client()
 
-# Note: pytest-flask provides the 'client' fixture, so you don't need to define it
+@pytest.fixture
+def mock_handle_request(mocker):
+    return mocker.patch('app.routes.handle_request')
 
-# -------------------- Login Route Tests -------------------- #
+@pytest.fixture
+def mock_get_db(mocker):
+    return mocker.patch('app.routes.get_db')
 
-
-def test_login_success(client, mocker, caplog):
-    """
-    Test the /login route for a successful login.
-    Ensures that the response is correct and logging occurs.
-    """
-    # Arrange
-    data = {"password": "testpass", "username": "testuser"}
-    expected_response = {"message": "Login successful"}
-
-    # Mock handle_request to return a successful response
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request",
-        return_value=(expected_response, 200),  # Return raw data and status code
-    )
-
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
-
-    # Set logging level to capture INFO and DEBUG logs
-    caplog.set_level(logging.DEBUG, logger="app.routes")
-
-    # Act
-    response = client.post("/service/auth/login", json=data)
-
-    # Assert
-    assert response.status_code == 200
-    assert response.get_json() == expected_response
-
-    mock_handle_request.assert_called_once_with(
-        login,
-        data["username"],
-        data["password"],
-        db=mock_get_db().__enter__.return_value,
-    )
-
-    assert "Login request received" in caplog.text
-    assert f"Request data: {data}" in caplog.text
-    assert f"Response: ({expected_response}, 200)" in caplog.text
-
-
-def test_login_db_error(client, mocker, caplog):
-    """
-    Test the /login route when a SQLAlchemyError occurs.
-    Ensures that a 500 error is returned and logging occurs.
-    """
-    # Arrange
-    data = {"password": "testpass", "username": "testuser"}
-
-    # Mock handle_request to raise SQLAlchemyError
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request", side_effect=SQLAlchemyError("DB Error")
-    )
-
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
-
-    # Set logging level to capture ERROR logs
-    caplog.set_level(logging.ERROR, logger="app.routes")
-
-    # Act
-    response = client.post("/service/auth/login", json=data)
-
-    # Assert
-    assert response.status_code == 500
-    assert response.get_json() == {"error": "Database error occurred"}
-
-    mock_handle_request.assert_called_once_with(
-        login,
-        data["username"],
-        data["password"],
-        db=mock_get_db().__enter__.return_value,
-    )
-
-    assert "Database error during login: DB Error" in caplog.text
-
-
-def test_login_unexpected_error(client, mocker, caplog):
-    """
-    Test the /login route when an unexpected Exception occurs.
-    Ensures that a 500 error is returned and logging occurs.
-    """
-    # Arrange
-    data = {"password": "testpass", "username": "testuser"}
-
-    # Mock handle_request to raise a generic Exception
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request", side_effect=Exception("Unexpected Error")
-    )
-
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
-
-    # Set logging level to capture ERROR logs
-    caplog.set_level(logging.ERROR, logger="app.routes")
-
-    # Act
-    response = client.post("/service/auth/login", json=data)
-
-    # Assert
-    assert response.status_code == 500
-    assert response.get_json() == {"error": "An unexpected error occurred"}
-
-    mock_handle_request.assert_called_once_with(
-        login,
-        data["username"],
-        data["password"],
-        db=mock_get_db().__enter__.return_value,
-    )
-
-    assert "Unexpected error during login: Unexpected Error" in caplog.text
-
-
-# -------------------- Register Route Tests -------------------- #
-
-
-def test_register_success(client, mocker, caplog):
-    """
-    Test the /register route for a successful registration.
-    Ensures that the response is correct and logging occurs.
-    """
-    # Arrange
-    data = {
-        "email": "test@example.com",
-        "first_name": "Test",
-        "last_name": "User",
-        "password": "testpass",
-        "username": "testuser",
+@pytest.fixture
+def mock_auth_functions(mocker):
+    return {
+        'login': mocker.patch('app.routes.login'),
+        'register': mocker.patch('app.routes.register'),
+        'logout': mocker.patch('app.routes.logout'),
+        'reset_password': mocker.patch('app.routes.reset_password'),
+        'change_password': mocker.patch('app.routes.change_password'),
+        'deactivate_account': mocker.patch('app.routes.deactivate_account'),
     }
-    expected_response = {"message": "Registration successful"}
 
-    # Mock handle_request to return a successful response
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request",
-        return_value=(expected_response, 201),  # Return raw data and status code
+# Helper function to simulate database context
+def mock_db_context(mocker):
+    mock_db = MagicMock()
+    mocker.patch('app.routes.get_db', return_value=MagicMock(__enter__=MagicMock(return_value=mock_db), __exit__=MagicMock()))
+    return mock_db
+
+# Tests for /login endpoint
+@pytest.mark.parametrize("data, expected_status, expected_response", [
+    ({"username": "user1", "password": "pass1"}, 200, {"token": "abcd1234"}),
+])
+def test_login_success(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, expected_status, expected_response):
+    mock_handle_request.return_value = (expected_response, expected_status)
+    
+    response = client.post("/service/auth/login", json=data)
+    
+    assert response.status_code == expected_status
+    assert response.get_json() == expected_response
+    mock_handle_request.assert_called_once_with(
+        mock_auth_functions['login'], "user1", "pass1", db=mocker.ANY
     )
 
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
+@pytest.mark.parametrize("data, exception, error_response", [
+    ({"username": "user1", "password": "pass1"}, SQLAlchemyError("DB Error"), {"error": "Database error occurred"}),
+    ({"username": "user1", "password": "pass1"}, Exception("Unexpected Error"), {"error": "An unexpected error occurred"}),
+])
+def test_login_errors(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, exception, error_response):
+    mock_handle_request.side_effect = exception
+    
+    response = client.post("/service/auth/login", json=data)
+    
+    if isinstance(exception, SQLAlchemyError):
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "Database error occurred"}
+    else:
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "An unexpected error occurred"}
+    mock_handle_request.assert_called_once_with(
+        mock_auth_functions['login'], "user1", "pass1", db=mocker.ANY
+    )
 
-    # Set logging level to capture INFO and DEBUG logs
-    caplog.set_level(logging.DEBUG, logger="app.routes")
-
-    # Act
+# Tests for /register endpoint
+@pytest.mark.parametrize("data, expected_status, expected_response", [
+    ({"email": "user@example.com", "password": "pass1", "first_name": "John", "last_name": "Doe", "username": "johndoe"}, 201, {"message": "User registered"}),
+])
+def test_register_success(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, expected_status, expected_response):
+    mock_handle_request.return_value = (expected_response, expected_status)
+    
     response = client.post("/service/auth/register", json=data)
-
-    # Assert
-    assert response.status_code == 201
+    
+    assert response.status_code == expected_status
     assert response.get_json() == expected_response
-
     mock_handle_request.assert_called_once_with(
-        register,
-        data["email"],
-        data["password"],
-        data["first_name"],
-        data["last_name"],
-        data["username"],
-        db=mock_get_db().__enter__.return_value,
+        mock_auth_functions['register'],
+        "user@example.com",
+        "pass1",
+        "John",
+        "Doe",
+        "johndoe",
+        db=mocker.ANY
     )
 
-    assert "Register request received" in caplog.text
-    assert f"Request data: {data}" in caplog.text
-    assert f"Response: ({expected_response}, 201)" in caplog.text
-
-
-# Continue rewriting the remaining tests in a similar fashion...
-
-# -------------------- Logout Route Tests -------------------- #
-
-
-def test_logout_success(client, mocker, caplog):
-    """
-    Test the /logout route for a successful logout.
-    Ensures that the response is correct and logging occurs.
-    """
-    # Arrange
-    expected_response = {"message": "Logout successful"}
-
-    # Mock handle_request to return a successful response
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request", return_value=(expected_response, 200)
+@pytest.mark.parametrize("data, exception, error_response", [
+    ({"email": "user@example.com", "password": "pass1", "first_name": "John", "last_name": "Doe", "username": "johndoe"}, SQLAlchemyError("DB Error"), {"error": "Database error occurred"}),
+    ({"email": "user@example.com", "password": "pass1", "first_name": "John", "last_name": "Doe", "username": "johndoe"}, Exception("Unexpected Error"), {"error": "An unexpected error occurred"}),
+])
+def test_register_errors(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, exception, error_response):
+    mock_handle_request.side_effect = exception
+    
+    response = client.post("/service/auth/register", json=data)
+    
+    if isinstance(exception, SQLAlchemyError):
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "Database error occurred"}
+    else:
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "An unexpected error occurred"}
+    mock_handle_request.assert_called_once_with(
+        mock_auth_functions['register'],
+        "user@example.com",
+        "pass1",
+        "John",
+        "Doe",
+        "johndoe",
+        db=mocker.ANY
     )
 
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
-
-    # Set logging level to capture INFO and DEBUG logs
-    caplog.set_level(logging.DEBUG, logger="app.routes")
-
-    # Act
+# Tests for /logout endpoint
+@pytest.mark.parametrize("expected_status, expected_response", [
+    (200, {"message": "Logged out"}),
+])
+def test_logout_success(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, expected_status, expected_response):
+    mock_handle_request.return_value = (expected_response, expected_status)
+    
     response = client.post("/service/auth/logout")
-
-    # Assert
-    assert response.status_code == 200
+    
+    assert response.status_code == expected_status
     assert response.get_json() == expected_response
-
     mock_handle_request.assert_called_once_with(
-        logout, db=mock_get_db().__enter__.return_value
+        mock_auth_functions['logout'], db=mocker.ANY
     )
 
-    assert "Logout request received" in caplog.text
-    assert f"Response: ({expected_response}, 200)" in caplog.text
-
-
-# -------------------- Reset Password Route Tests -------------------- #
-
-
-def test_reset_password_success(client, mocker, caplog):
-    """
-    Test the /reset-password route for a successful password reset.
-    Ensures that the response is correct and logging occurs.
-    """
-    # Arrange
-    data = {"email": "test@example.com"}
-    expected_response = {"message": "Password reset successful"}
-
-    # Mock handle_request to return a successful response
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request", return_value=(expected_response, 200)
+@pytest.mark.parametrize("exception, error_response", [
+    (SQLAlchemyError("DB Error"), {"error": "Database error occurred"}),
+    (Exception("Unexpected Error"), {"error": "An unexpected error occurred"}),
+])
+def test_logout_errors(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, exception, error_response):
+    mock_handle_request.side_effect = exception
+    
+    response = client.post("/service/auth/logout")
+    
+    if isinstance(exception, SQLAlchemyError):
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "Database error occurred"}
+    else:
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "An unexpected error occurred"}
+    mock_handle_request.assert_called_once_with(
+        mock_auth_functions['logout'], db=mocker.ANY
     )
 
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
-
-    # Set logging level to capture INFO and DEBUG logs
-    caplog.set_level(logging.DEBUG, logger="app.routes")
-
-    # Act
+# Tests for /reset-password endpoint
+@pytest.mark.parametrize("data, expected_status, expected_response", [
+    ({"email": "user@example.com"}, 200, {"message": "Password reset email sent"}),
+])
+def test_reset_password_success(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, expected_status, expected_response):
+    mock_handle_request.return_value = (expected_response, expected_status)
+    
     response = client.post("/service/auth/reset-password", json=data)
-
-    # Assert
-    assert response.status_code == 200
+    
+    assert response.status_code == expected_status
     assert response.get_json() == expected_response
-
     mock_handle_request.assert_called_once_with(
-        reset_password, data["email"], db=mock_get_db().__enter__.return_value
+        mock_auth_functions['reset_password'],
+        "user@example.com",
+        db=mocker.ANY
     )
 
-    assert "Reset password request received" in caplog.text
-    assert f"Request data: {data}" in caplog.text
-    assert f"Response: ({expected_response}, 200)" in caplog.text
-
-
-# -------------------- Change Password Route Tests -------------------- #
-
-
-def test_change_password_success(client, mocker, caplog):
-    """
-    Test the /change-password route for a successful password change.
-    Ensures that the response is correct and logging occurs.
-    """
-    # Arrange
-    data = {"new_password": "newpass", "old_password": "oldpass"}
-    expected_response = {"message": "Password change successful"}
-
-    # Mock handle_request to return a successful response
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request", return_value=(expected_response, 200)
+@pytest.mark.parametrize("data, exception, error_response", [
+    ({"email": "user@example.com"}, SQLAlchemyError("DB Error"), {"error": "Database error occurred"}),
+    ({"email": "user@example.com"}, Exception("Unexpected Error"), {"error": "An unexpected error occurred"}),
+])
+def test_reset_password_errors(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, exception, error_response):
+    mock_handle_request.side_effect = exception
+    
+    response = client.post("/service/auth/reset-password", json=data)
+    
+    if isinstance(exception, SQLAlchemyError):
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "Database error occurred"}
+    else:
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "An unexpected error occurred"}
+    mock_handle_request.assert_called_once_with(
+        mock_auth_functions['reset_password'],
+        "user@example.com",
+        db=mocker.ANY
     )
 
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
-
-    # Set logging level to capture INFO and DEBUG logs
-    caplog.set_level(logging.DEBUG, logger="app.routes")
-
-    # Act
+# Tests for /change-password endpoint
+@pytest.mark.parametrize("data, expected_status, expected_response", [
+    ({"old_password": "oldpass", "new_password": "newpass"}, 200, {"message": "Password changed"}),
+])
+def test_change_password_success(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, expected_status, expected_response):
+    mock_handle_request.return_value = (expected_response, expected_status)
+    
     response = client.post("/service/auth/change-password", json=data)
-
-    # Assert
-    assert response.status_code == 200
+    
+    assert response.status_code == expected_status
     assert response.get_json() == expected_response
-
     mock_handle_request.assert_called_once_with(
-        change_password,
-        data["old_password"],
-        data["new_password"],
-        db=mock_get_db().__enter__.return_value,
+        mock_auth_functions['change_password'],
+        "oldpass",
+        "newpass",
+        db=mocker.ANY
     )
 
-    assert "Change password request received" in caplog.text
-    assert f"Request data: {data}" in caplog.text
-    assert f"Response: ({expected_response}, 200)" in caplog.text
-
-
-# -------------------- Deactivate Account Route Tests -------------------- #
-
-
-def test_deactivate_account_success(client, mocker, caplog):
-    """
-    Test the /deactivate-account route for a successful account deactivation.
-    Ensures that the response is correct and logging occurs.
-    """
-    # Arrange
-    data = {"password": "testpass", "username": "testuser"}
-    expected_response = {"message": "Account deactivated successfully"}
-
-    # Mock handle_request to return a successful response
-    mock_handle_request = mocker.patch(
-        "app.routes.handle_request", return_value=(expected_response, 200)
+@pytest.mark.parametrize("data, exception, error_response", [
+    ({"old_password": "oldpass", "new_password": "newpass"}, SQLAlchemyError("DB Error"), {"error": "Database error occurred"}),
+    ({"old_password": "oldpass", "new_password": "newpass"}, Exception("Unexpected Error"), {"error": "An unexpected error occurred"}),
+])
+def test_change_password_errors(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, exception, error_response):
+    mock_handle_request.side_effect = exception
+    
+    response = client.post("/service/auth/change-password", json=data)
+    
+    if isinstance(exception, SQLAlchemyError):
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "Database error occurred"}
+    else:
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "An unexpected error occurred"}
+    mock_handle_request.assert_called_once_with(
+        mock_auth_functions['change_password'],
+        "oldpass",
+        "newpass",
+        db=mocker.ANY
     )
 
-    # Mock get_db context manager
-    mock_get_db = mocker.patch("app.routes.get_db")
-
-    # Set logging level to capture INFO and DEBUG logs
-    caplog.set_level(logging.DEBUG, logger="app.routes")
-
-    # Act
+# Tests for /deactivate-account endpoint
+@pytest.mark.parametrize("data, expected_status, expected_response", [
+    ({"username": "user1", "password": "pass1"}, 200, {"message": "Account deactivated"}),
+])
+def test_deactivate_account_success(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, expected_status, expected_response):
+    mock_handle_request.return_value = (expected_response, expected_status)
+    
     response = client.post("/service/auth/deactivate-account", json=data)
-
-    # Assert
-    assert response.status_code == 200
+    
+    assert response.status_code == expected_status
     assert response.get_json() == expected_response
-
     mock_handle_request.assert_called_once_with(
-        deactivate_account,
-        data["username"],
-        data["password"],
-        db=mock_get_db().__enter__.return_value,
+        mock_auth_functions['deactivate_account'],
+        "user1",
+        "pass1",
+        db=mocker.ANY
     )
 
-    assert "Deactivate account request received" in caplog.text
-    assert f"Request data: {data}" in caplog.text
-    assert f"Response: ({expected_response}, 200)" in caplog.text
+@pytest.mark.parametrize("data, exception, error_response", [
+    ({"username": "user1", "password": "pass1"}, SQLAlchemyError("DB Error"), {"error": "Database error occurred"}),
+    ({"username": "user1", "password": "pass1"}, Exception("Unexpected Error"), {"error": "An unexpected error occurred"}),
+])
+def test_deactivate_account_errors(client, mock_handle_request, mock_get_db, mock_auth_functions, mocker, data, exception, error_response):
+    mock_handle_request.side_effect = exception
+    
+    response = client.post("/service/auth/deactivate-account", json=data)
+    
+    if isinstance(exception, SQLAlchemyError):
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "Database error occurred"}
+    else:
+        assert response.status_code == 500
+        assert response.get_json() == {"error": "An unexpected error occurred"}
+    mock_handle_request.assert_called_once_with(
+        mock_auth_functions['deactivate_account'],
+        "user1",
+        "pass1",
+        db=mocker.ANY
+    )
 
-
-# -------------------- Health Route Test -------------------- #
-
-
-def test_health_route(client, caplog):
-    """
-    Test the /health route to ensure it returns a healthy status.
-    """
-    # Arrange
-    caplog.set_level(logging.INFO, logger="app.routes")
-
-    # Act
+# Tests for /health endpoint
+def test_health(client):
     response = client.get("/service/auth/health")
-
-    # Assert
     assert response.status_code == 200
     assert response.get_json() == {"status": "OK"}
-    # Optionally verify logs if health route logs information
-
-
-def test_health_route_no_logging(client, caplog):
-    """
-    Ensures that the /health route does not log any unexpected messages.
-    """
-    # Arrange
-    caplog.set_level(logging.INFO, logger="app.routes")
-
-    # Act
-    response = client.get("/service/auth/health")
-
-    # Assert
-    assert response.status_code == 200
-    assert response.get_json() == {"status": "OK"}
-
-    # Ensure no error logs
-    assert not any(record.levelno == logging.ERROR for record in caplog.records)

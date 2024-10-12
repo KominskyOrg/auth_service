@@ -1,14 +1,17 @@
+# app/utils/request_handler.py
+
 import logging
 from flask import jsonify
-from marshmallow import ValidationError
+from marshmallow import ValidationError as MarshmallowValidationError
 from app.utils.exceptions import (
-    ValidationError,
+    ValidationError as CustomValidationError,
     AuthenticationError,
     AuthorizationError,
     DatabaseError,
 )
 
 logger = logging.getLogger(__name__)
+
 
 
 def handle_request(service_function, *args, **kwargs):
@@ -20,7 +23,10 @@ def handle_request(service_function, *args, **kwargs):
             f"Service function response: {response}, Status code: {status_code}"
         )
         return jsonify(response), status_code
-    except ValidationError as ve:
+    except MarshmallowValidationError as ve:
+        logger.warning(f"Validation error in {service_function.__name__}: {ve.messages}")
+        return jsonify({"error": ve.messages}), 400
+    except CustomValidationError as ve:
         logger.warning(f"Validation error in {service_function.__name__}: {ve.message}")
         return jsonify({"error": ve.message}), 400
     except AuthenticationError as ae:

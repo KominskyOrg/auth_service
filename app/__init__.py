@@ -15,9 +15,6 @@ def create_app():
     # Enable CORS
     CORS(app)
 
-    # Set up detailed logging
-    setup_logging(app)
-
     logger = app.logger
     logger.info("Creating the Flask application.")
 
@@ -25,6 +22,9 @@ def create_app():
     config = get_config()
     app.config.from_object(config)
     logger.info("Configuration loaded.")
+
+    # Set up detailed logging after configuration
+    setup_logging(app)
 
     # Initialize the database
     init_db(app)
@@ -63,11 +63,11 @@ def setup_logging(app):
     # Add the handler to the app's logger
     app.logger.addHandler(stream_handler)
     app.logger.setLevel(logging.INFO)
-
+    
     # Optionally, add file logging for production
     if app.config.get("ENV") == "production":
         file_handler = logging.FileHandler("app.log")
-        file_handler.setLevel(logging.WARNING)
+        file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(formatter)
         app.logger.addHandler(file_handler)
 
@@ -91,6 +91,3 @@ def register_swagger_ui(app, logger):
         logger.error("Flask-Swagger-UI is not installed. Swagger UI not available.")
     except Exception as e:
         logger.error("Failed to register Swagger UI: %s", e)
-
-
-app = create_app()

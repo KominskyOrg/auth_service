@@ -1,7 +1,7 @@
 # Makefile
 
 # Variables
-REPO_NAME ?= auth_app
+REPO_NAME ?= auth_api
 DOCKER_COMPOSE = docker-compose
 PIPENV = pipenv run
 FLAKE8 = $(PIPENV) flake8

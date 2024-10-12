@@ -1,21 +1,26 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
     branches:
-        - main
-        - dev
+      - main
+      - staging
+    paths:
+      - '**/*.py'
+      - 'Pipfile*'
   pull_request:
-    branches: 
-        - main
-        - dev
+    branches:
+      - main
+      - staging
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - '**/*.py'
+      - 'Pipfile*'
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Run tests
-      run: make test
+    uses: KominskyOrg/kom_reusable_workflows/.github/workflows/ci_python.yml@v1.3
+    secrets: inherit
