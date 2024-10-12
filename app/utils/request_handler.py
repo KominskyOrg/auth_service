@@ -13,7 +13,6 @@ from app.utils.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-
 def handle_request(service_function, *args, **kwargs):
     logger.info(f"Handling request for {service_function.__name__}")
     logger.debug(f"Arguments: args={args}, kwargs={kwargs}")
@@ -24,7 +23,9 @@ def handle_request(service_function, *args, **kwargs):
         )
         return jsonify(response), status_code
     except MarshmallowValidationError as ve:
-        logger.warning(f"Validation error in {service_function.__name__}: {ve.messages}")
+        logger.warning(
+            f"Validation error in {service_function.__name__}: {ve.messages}"
+        )
         return jsonify({"error": ve.messages}), 400
     except CustomValidationError as ve:
         logger.warning(f"Validation error in {service_function.__name__}: {ve.message}")

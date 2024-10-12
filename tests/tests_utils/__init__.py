@@ -15,6 +15,7 @@ import logging
 
 # -------------------- Pytest Fixtures -------------------- #
 
+
 @pytest.fixture
 def app():
     """
@@ -23,7 +24,9 @@ def app():
     app = Flask(__name__)
     return app
 
+
 # -------------------- handle_request Tests -------------------- #
+
 
 def test_handle_request_success(client, mocker, caplog):
     """
@@ -52,7 +55,11 @@ def test_handle_request_success(client, mocker, caplog):
     # Verify logs
     assert "Handling request for mock_service" in caplog.text
     assert "Arguments: args=('arg1',), kwargs={'key': 'value'}" in caplog.text
-    assert "Service function response: {'data': 'success'}, Status code: 200" in caplog.text
+    assert (
+        "Service function response: {'data': 'success'}, Status code: 200"
+        in caplog.text
+    )
+
 
 def test_handle_request_validation_error(client, mocker, caplog):
     """
@@ -80,6 +87,7 @@ def test_handle_request_validation_error(client, mocker, caplog):
     # Verify logs
     assert f"Validation error in mock_service: {error_message}" in caplog.text
 
+
 def test_handle_request_custom_validation_error(client, mocker, caplog):
     """
     Test handle_request when a custom ValidationError is raised.
@@ -105,6 +113,7 @@ def test_handle_request_custom_validation_error(client, mocker, caplog):
 
     # Verify logs
     assert f"Validation error in mock_service: {error_message}" in caplog.text
+
 
 def test_handle_request_authentication_error(client, mocker, caplog):
     """
@@ -132,6 +141,7 @@ def test_handle_request_authentication_error(client, mocker, caplog):
     # Verify logs
     assert f"Authentication error in mock_service: {error_message}" in caplog.text
 
+
 def test_handle_request_authorization_error(client, mocker, caplog):
     """
     Test handle_request when an AuthorizationError is raised.
@@ -158,6 +168,7 @@ def test_handle_request_authorization_error(client, mocker, caplog):
     # Verify logs
     assert f"Authorization error in mock_service: {error_message}" in caplog.text
 
+
 def test_handle_request_database_error(client, mocker, caplog):
     """
     Test handle_request when a DatabaseError is raised.
@@ -183,6 +194,7 @@ def test_handle_request_database_error(client, mocker, caplog):
 
     # Verify logs
     assert f"Database error in mock_service: {error_message}" in caplog.text
+
 
 def test_handle_request_unexpected_error(client, mocker, caplog):
     """
@@ -211,4 +223,3 @@ def test_handle_request_unexpected_error(client, mocker, caplog):
     assert f"Unexpected error in mock_service: {error_message}" in caplog.text
     # Additionally, check that the exception was logged with traceback
     assert "Traceback (most recent call last)" in caplog.text
-

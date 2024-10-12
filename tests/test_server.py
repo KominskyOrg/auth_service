@@ -4,12 +4,14 @@ import pytest
 from flask import Flask
 from app.server import app as server_app
 
+
 def test_app_exists(app):
     """
     Test that the Flask app instance is created successfully.
     """
     assert app is not None, "App instance should not be None."
     assert isinstance(app, Flask), "App should be an instance of Flask."
+
 
 def test_app_config(app):
     """
@@ -20,7 +22,10 @@ def test_app_config(app):
     assert app.config["TESTING"] is True, "TESTING config should be True."
 
     # Example: Check if a specific configuration key exists
-    assert "SQLALCHEMY_DATABASE_URI" in app.config, "SQLALCHEMY_DATABASE_URI should be set."
+    assert (
+        "SQLALCHEMY_DATABASE_URI" in app.config
+    ), "SQLALCHEMY_DATABASE_URI should be set."
+
 
 def test_app_routes(client):
     """
@@ -29,4 +34,6 @@ def test_app_routes(client):
     """
     response = client.get("/service/auth/health")
     assert response.status_code == 200, "Health endpoint should return status code 200."
-    assert response.get_json() == {"status": "OK"}, "Health endpoint should return {'status': 'OK'}."
+    assert response.get_json() == {
+        "status": "OK"
+    }, "Health endpoint should return {'status': 'OK'}."

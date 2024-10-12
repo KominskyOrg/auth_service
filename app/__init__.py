@@ -63,7 +63,7 @@ def setup_logging(app):
     # Add the handler to the app's logger
     app.logger.addHandler(stream_handler)
     app.logger.setLevel(logging.INFO)
-    
+
     # Optionally, add file logging for production
     if app.config.get("ENV") == "production":
         file_handler = logging.FileHandler("app.log")
