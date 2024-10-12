@@ -6,7 +6,6 @@ from flask_cors import CORS
 from app.routes import auth_service_bp
 from app.config import get_config
 from app.database import init_db
-import os
 
 
 def create_app():
@@ -42,10 +41,8 @@ def create_app():
     return app
 
 
-def setup_logging(app):
-    """
-    Configures logging for the Flask application.
-    """
+def setup_logging(app) -> None:
+    """Configures logging for the Flask application."""
     # Remove default handlers to prevent duplicate logs
     for handler in app.logger.handlers[:]:
         app.logger.removeHandler(handler)
@@ -72,10 +69,8 @@ def setup_logging(app):
         app.logger.addHandler(file_handler)
 
 
-def register_swagger_ui(app, logger):
-    """
-    Registers Swagger UI for API documentation in development environment.
-    """
+def register_swagger_ui(app, logger) -> None:
+    """Registers Swagger UI for API documentation in development environment."""
     try:
         from flask_swagger_ui import get_swaggerui_blueprint
 

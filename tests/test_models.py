@@ -1,6 +1,5 @@
 # tests/test_models.py
 
-import pytest
 from app.models import User
 from datetime import datetime
 import logging
@@ -8,9 +7,8 @@ import logging
 # -------------------- User Initialization Tests -------------------- #
 
 
-def test_user_initialization(caplog):
-    """
-    Test the initialization of a User object.
+def test_user_initialization(caplog) -> None:
+    """Test the initialization of a User object.
     Ensures that all attributes are set correctly and logging occurs.
     """
     # Arrange
@@ -49,9 +47,8 @@ def test_user_initialization(caplog):
 # -------------------- set_password Tests -------------------- #
 
 
-def test_user_set_password(caplog):
-    """
-    Test the set_password method of the User class.
+def test_user_set_password(caplog) -> None:
+    """Test the set_password method of the User class.
     Ensures that the password is updated and logging occurs.
     """
     # Arrange
@@ -81,9 +78,8 @@ def test_user_set_password(caplog):
 # -------------------- to_dict Tests -------------------- #
 
 
-def test_user_to_dict_with_created_at(caplog):
-    """
-    Test the to_dict method of the User class when created_at is set.
+def test_user_to_dict_with_created_at(caplog) -> None:
+    """Test the to_dict method of the User class when created_at is set.
     Ensures that the dictionary representation is correct and logging occurs.
     """
     # Arrange
@@ -119,9 +115,8 @@ def test_user_to_dict_with_created_at(caplog):
     assert f"Converting User object to dictionary: {user.username}" in caplog.text
 
 
-def test_user_to_dict_without_created_at(caplog):
-    """
-    Test the to_dict method of the User class when created_at is None.
+def test_user_to_dict_without_created_at(caplog) -> None:
+    """Test the to_dict method of the User class when created_at is None.
     Ensures that the dictionary representation handles None correctly.
     """
     # Arrange
@@ -160,10 +155,8 @@ def test_user_to_dict_without_created_at(caplog):
 # -------------------- Additional Tests for Coverage -------------------- #
 
 
-def test_user_set_password_with_logging(caplog):
-    """
-    Ensures that set_password logs the appropriate messages.
-    """
+def test_user_set_password_with_logging(caplog) -> None:
+    """Ensures that set_password logs the appropriate messages."""
     # Arrange
     user = User(
         email="test@example.com",
@@ -186,10 +179,8 @@ def test_user_set_password_with_logging(caplog):
     assert f"Password updated for user: {user.username}" in caplog.text
 
 
-def test_user_initialization_logging(caplog):
-    """
-    Ensures that initializing a User object logs the appropriate messages.
-    """
+def test_user_initialization_logging(caplog) -> None:
+    """Ensures that initializing a User object logs the appropriate messages."""
     # Arrange
     email = "another_test@example.com"
     username = "anotheruser"
@@ -201,7 +192,7 @@ def test_user_initialization_logging(caplog):
     caplog.set_level(logging.DEBUG, logger="app.models")
 
     # Act
-    user = User(
+    User(
         email=email,
         username=username,
         password=password,

@@ -1,21 +1,16 @@
 # tests/test_server.py
 
-import pytest
 from flask import Flask
-from app.server import app as server_app
 
 
-def test_app_exists(app):
-    """
-    Test that the Flask app instance is created successfully.
-    """
+def test_app_exists(app) -> None:
+    """Test that the Flask app instance is created successfully."""
     assert app is not None, "App instance should not be None."
     assert isinstance(app, Flask), "App should be an instance of Flask."
 
 
-def test_app_config(app):
-    """
-    Test basic configuration settings of the Flask app.
+def test_app_config(app) -> None:
+    """Test basic configuration settings of the Flask app.
     Adjust the assertions based on your actual configuration.
     """
     # Example: Check if testing mode is on
@@ -27,9 +22,8 @@ def test_app_config(app):
     ), "SQLALCHEMY_DATABASE_URI should be set."
 
 
-def test_app_routes(client):
-    """
-    Test that the health check endpoint is working.
+def test_app_routes(client) -> None:
+    """Test that the health check endpoint is working.
     Assumes that you have a '/service/auth/health' endpoint as defined earlier.
     """
     response = client.get("/service/auth/health")

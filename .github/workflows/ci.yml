@@ -22,5 +22,5 @@ on:
 
 jobs:
   test:
-    uses: KominskyOrg/kom_reusable_workflows/.github/workflows/ci_python.yml@v1.3
+    uses: KominskyOrg/kom_reusable_workflows/.github/workflows/ci_python.yml@v1.4
     secrets: inherit

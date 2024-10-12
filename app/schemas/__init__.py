@@ -1,7 +1,6 @@
 # app/schemas/auth_schemas.py
 
-from marshmallow import Schema, fields, validate, validates, ValidationError
-import re
+from marshmallow import Schema, fields, validate
 
 
 class RegisterSchema(Schema):

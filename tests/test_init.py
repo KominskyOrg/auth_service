@@ -13,13 +13,13 @@ from app.routes import auth_service_bp
 
 
 @pytest.fixture
-def set_development_env(monkeypatch):
+def set_development_env(monkeypatch) -> None:
     """Set FLASK_ENV to 'development'."""
     monkeypatch.setenv("FLASK_ENV", "development")
 
 
 @pytest.fixture
-def set_production_env(monkeypatch):
+def set_production_env(monkeypatch) -> None:
     """Set FLASK_ENV to 'production'."""
     monkeypatch.setenv("FLASK_ENV", "production")
 
@@ -72,7 +72,7 @@ def test_create_app_development(
     mock_register_blueprint,
     mock_get_swaggerui_blueprint,
     caplog,
-):
+) -> None:
     """Test creating the app in development environment."""
     from app import create_app
 
@@ -119,7 +119,7 @@ def test_create_app_development(
 
 def test_create_app_production(
     set_production_env, mock_init_db, mock_register_blueprint, caplog
-):
+) -> None:
     """Test creating the app in production environment."""
     from app import create_app
 
@@ -162,12 +162,12 @@ def test_create_app_production(
 
 def test_register_swagger_ui_import_error(
     set_development_env, mock_init_db, caplog, mock_flask_swagger_ui_import_error
-):
+) -> None:
     """Test registering Swagger UI when flask_swagger_ui is not installed."""
     from app import create_app
 
     with caplog.at_level(logging.ERROR):
-        app = create_app()
+        create_app()
 
     # Check that the ImportError was logged
     expected_log_message = (
@@ -184,12 +184,12 @@ def test_register_swagger_ui_exception(
     mock_register_blueprint,
     mock_get_swaggerui_blueprint_exception,
     caplog,
-):
+) -> None:
     """Test handling of exceptions when registering Swagger UI."""
     from app import create_app
 
     with caplog.at_level(logging.ERROR):
-        app = create_app()
+        create_app()
 
     # Assert that the exception was caught and logged
     expected_log_message = "Failed to register Swagger UI: Test Exception"

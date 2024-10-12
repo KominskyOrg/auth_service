@@ -1,7 +1,6 @@
 # tests/test_routes.py
 
 import pytest
-from flask import url_for
 from unittest.mock import MagicMock
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -75,7 +74,7 @@ def test_login_success(
     data,
     expected_status,
     expected_response,
-):
+) -> None:
     mock_handle_request.return_value = (expected_response, expected_status)
 
     response = client.post("/service/auth/login", json=data)
@@ -111,7 +110,7 @@ def test_login_errors(
     data,
     exception,
     error_response,
-):
+) -> None:
     mock_handle_request.side_effect = exception
 
     response = client.post("/service/auth/login", json=data)
@@ -153,7 +152,7 @@ def test_register_success(
     data,
     expected_status,
     expected_response,
-):
+) -> None:
     mock_handle_request.return_value = (expected_response, expected_status)
 
     response = client.post("/service/auth/register", json=data)
@@ -207,7 +206,7 @@ def test_register_errors(
     data,
     exception,
     error_response,
-):
+) -> None:
     mock_handle_request.side_effect = exception
 
     response = client.post("/service/auth/register", json=data)
@@ -244,7 +243,7 @@ def test_logout_success(
     mocker,
     expected_status,
     expected_response,
-):
+) -> None:
     mock_handle_request.return_value = (expected_response, expected_status)
 
     response = client.post("/service/auth/logout")
@@ -271,7 +270,7 @@ def test_logout_errors(
     mocker,
     exception,
     error_response,
-):
+) -> None:
     mock_handle_request.side_effect = exception
 
     response = client.post("/service/auth/logout")
@@ -303,7 +302,7 @@ def test_reset_password_success(
     data,
     expected_status,
     expected_response,
-):
+) -> None:
     mock_handle_request.return_value = (expected_response, expected_status)
 
     response = client.post("/service/auth/reset-password", json=data)
@@ -339,7 +338,7 @@ def test_reset_password_errors(
     data,
     exception,
     error_response,
-):
+) -> None:
     mock_handle_request.side_effect = exception
 
     response = client.post("/service/auth/reset-password", json=data)
@@ -375,7 +374,7 @@ def test_change_password_success(
     data,
     expected_status,
     expected_response,
-):
+) -> None:
     mock_handle_request.return_value = (expected_response, expected_status)
 
     response = client.post("/service/auth/change-password", json=data)
@@ -411,7 +410,7 @@ def test_change_password_errors(
     data,
     exception,
     error_response,
-):
+) -> None:
     mock_handle_request.side_effect = exception
 
     response = client.post("/service/auth/change-password", json=data)
@@ -447,7 +446,7 @@ def test_deactivate_account_success(
     data,
     expected_status,
     expected_response,
-):
+) -> None:
     mock_handle_request.return_value = (expected_response, expected_status)
 
     response = client.post("/service/auth/deactivate-account", json=data)
@@ -483,7 +482,7 @@ def test_deactivate_account_errors(
     data,
     exception,
     error_response,
-):
+) -> None:
     mock_handle_request.side_effect = exception
 
     response = client.post("/service/auth/deactivate-account", json=data)
@@ -500,7 +499,7 @@ def test_deactivate_account_errors(
 
 
 # Tests for /health endpoint
-def test_health(client):
+def test_health(client) -> None:
     response = client.get("/service/auth/health")
     assert response.status_code == 200
     assert response.get_json() == {"status": "OK"}

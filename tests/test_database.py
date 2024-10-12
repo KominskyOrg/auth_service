@@ -1,8 +1,9 @@
 import pytest
-from unittest.mock import patch, MagicMock, ANY
-from app.database import init_db, get_db, Base
+from unittest.mock import patch, MagicMock
+from app.database import init_db, get_db
 from sqlalchemy.exc import SQLAlchemyError
 import os
+from typing import Never
 
 # -------------------- init_db Tests -------------------- #
 
@@ -13,7 +14,7 @@ import os
 @patch("app.database.Base.metadata.create_all")
 def test_init_db_success(
     mock_create_all, mock_scoped_session, mock_sessionmaker, mock_create_engine
-):
+) -> None:
     # Mock the engine
     mock_engine = MagicMock()
     mock_create_engine.return_value = mock_engine
@@ -55,7 +56,7 @@ def test_init_db_default_db_url(
     mock_sessionmaker,
     mock_create_engine,
     monkeypatch,
-):
+) -> None:
     # Remove DATABASE_URL to test default
     monkeypatch.delenv("DATABASE_URL", raising=False)
 
@@ -94,7 +95,7 @@ def test_init_db_default_db_url(
 
 
 @patch("app.database.db_session")
-def test_get_db_success(mock_db_session):
+def test_get_db_success(mock_db_session) -> None:
     mock_db = MagicMock()
     mock_db_session.return_value = mock_db
 
@@ -108,13 +109,13 @@ def test_get_db_success(mock_db_session):
 
 
 @patch("app.database.db_session")
-def test_get_db_sqlalchemy_error(mock_db_session):
+def test_get_db_sqlalchemy_error(mock_db_session) -> Never:
     mock_db = MagicMock()
     mock_db_session.return_value = mock_db
 
     # Use the context manager and raise an exception inside the block
     with pytest.raises(SQLAlchemyError):
-        with get_db() as db:
+        with get_db():
             raise SQLAlchemyError("Session error")
 
     # Ensure rollback and close were called
@@ -123,13 +124,13 @@ def test_get_db_sqlalchemy_error(mock_db_session):
 
 
 @patch("app.database.db_session")
-def test_get_db_unexpected_error(mock_db_session):
+def test_get_db_unexpected_error(mock_db_session) -> Never:
     mock_db = MagicMock()
     mock_db_session.return_value = mock_db
 
     # Use the context manager and raise an unexpected exception inside the block
     with pytest.raises(Exception):
-        with get_db() as db:
+        with get_db():
             raise SQLAlchemyError("Unexpected error")
 
     # Ensure rollback and close were called
@@ -148,10 +149,8 @@ def test_get_db_unexpected_error(mock_db_session):
 @patch("app.database.Base.metadata.create_all")
 def test_init_db_engine_creation_failure(
     mock_create_all, mock_scoped_session, mock_sessionmaker, mock_create_engine
-):
-    """
-    Test that init_db raises SQLAlchemyError when engine creation fails.
-    """
+) -> None:
+    """Test that init_db raises SQLAlchemyError when engine creation fails."""
     with pytest.raises(SQLAlchemyError, match="Engine creation failed"):
         init_db(app=None)
 
@@ -171,10 +170,8 @@ def test_init_db_engine_creation_failure(
 @patch("app.database.Base.metadata.create_all")
 def test_init_db_sessionmaker_failure(
     mock_create_all, mock_scoped_session, mock_sessionmaker, mock_create_engine
-):
-    """
-    Test that init_db raises SQLAlchemyError when sessionmaker configuration fails.
-    """
+) -> None:
+    """Test that init_db raises SQLAlchemyError when sessionmaker configuration fails."""
     # Arrange
     mock_engine = MagicMock()
     mock_create_engine.return_value = mock_engine
@@ -195,10 +192,8 @@ def test_init_db_sessionmaker_failure(
 @patch("app.database.Base.metadata.create_all")
 def test_init_db_scoped_session_failure(
     mock_create_all, mock_scoped_session, mock_sessionmaker, mock_create_engine
-):
-    """
-    Test that init_db raises SQLAlchemyError when scoped_session creation fails.
-    """
+) -> None:
+    """Test that init_db raises SQLAlchemyError when scoped_session creation fails."""
     # Arrange
     mock_engine = MagicMock()
     mock_create_engine.return_value = mock_engine
@@ -227,10 +222,8 @@ def test_init_db_scoped_session_failure(
 )
 def test_init_db_create_all_failure(
     mock_create_all, mock_scoped_session, mock_sessionmaker, mock_create_engine
-):
-    """
-    Test that init_db raises SQLAlchemyError when Base.metadata.create_all fails.
-    """
+) -> None:
+    """Test that init_db raises SQLAlchemyError when Base.metadata.create_all fails."""
     # Arrange
     mock_engine = MagicMock()
     mock_create_engine.return_value = mock_engine

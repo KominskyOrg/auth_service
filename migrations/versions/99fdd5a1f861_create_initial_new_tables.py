@@ -1,4 +1,4 @@
-"""Create initial new tables
+"""Create initial new tables.
 
 Revision ID: 99fdd5a1f861
 Revises: 862be6db6376
@@ -8,8 +8,6 @@ Create Date: 2024-09-13 21:35:36.159843
 
 from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.

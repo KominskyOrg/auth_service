@@ -22,12 +22,10 @@ pytest-flask = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"
-black = "*"
-flake8 = "*"
-autopep8 = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+ruff = "*"
 
 [requires]
 python_version = "3.12"

@@ -1,13 +1,10 @@
 # tests/tests_service/test_jwt.py
 
-import pytest
-from unittest.mock import MagicMock
-import jwt
 import datetime
-from app.service.jwt import generate_jwt, SECRET_KEY
+from app.service.jwt import generate_jwt
 
 
-def test_generate_jwt_success(mocker):
+def test_generate_jwt_success(mocker) -> None:
     user_id = 123
     mock_secret_key = "test-secret-key"
     mock_token = "mocked.jwt.token"
@@ -49,7 +46,7 @@ def test_generate_jwt_success(mocker):
     mock_logger.debug.assert_called_with(f"Generated JWT: {mock_token}")
 
 
-def test_generate_jwt_exception(mocker):
+def test_generate_jwt_exception(mocker) -> None:
     user_id = 123
 
     # Patch the SECRET_KEY directly
@@ -77,7 +74,7 @@ def test_generate_jwt_exception(mocker):
     ), "Error message should be logged correctly."
 
 
-def test_generate_jwt_default_secret_key(mocker):
+def test_generate_jwt_default_secret_key(mocker) -> None:
     user_id = 456
     mock_token = "default-secret.jwt.token"
 

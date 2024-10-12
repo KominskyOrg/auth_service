@@ -149,7 +149,5 @@ def deactivate_account_route():
 
 @auth_service_bp.route("/health", methods=["GET"])
 def health():
-    """
-    Health check endpoint to verify that the auth_service is running.
-    """
+    """Health check endpoint to verify that the auth_service is running."""
     return jsonify({"status": "OK"}), 200

@@ -1,8 +1,6 @@
 import pytest
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import call
 from sqlalchemy.exc import SQLAlchemyError
-import bcrypt
-from app.service.jwt import generate_jwt
 from app.utils.exceptions import (
     ValidationError,
     AuthenticationError,
@@ -13,8 +11,6 @@ from app.models import User
 from app.schemas.auth_schemas import (
     RegisterSchema,
     LoginSchema,
-    ResetPasswordSchema,
-    ChangePasswordSchema,
     DeactivateAccountSchema,
 )
 
@@ -86,7 +82,7 @@ def mock_deactivate_account_schema_load(mocker):
 # -------------------------
 
 
-def test_register_success(mock_db, mock_logger, mock_bcrypt, mock_register_schema_load):
+def test_register_success(mock_db, mock_logger, mock_bcrypt, mock_register_schema_load) -> None:
     # Arrange
     email = "test@example.com"
     password = "Password123"
@@ -141,7 +137,7 @@ def test_register_success(mock_db, mock_logger, mock_bcrypt, mock_register_schem
     assert status_code == 201, "Unexpected status code for registration"
 
 
-def test_register_validation_error(mock_register_schema_load):
+def test_register_validation_error(mock_register_schema_load) -> None:
     # Arrange
     mock_register_schema_load.side_effect = ValidationError("Invalid data")
 
@@ -151,7 +147,7 @@ def test_register_validation_error(mock_register_schema_load):
     assert str(exc_info.value) == "Invalid data"
 
 
-def test_register_existing_active_user(mock_db, mock_logger):
+def test_register_existing_active_user(mock_db, mock_logger) -> None:
     # Arrange
     email = "test@example.com"
     username = "johndoe"
@@ -181,7 +177,7 @@ def test_register_existing_active_user(mock_db, mock_logger):
 
 def test_register_database_error(
     mock_db, mock_logger, mock_bcrypt, mock_register_schema_load
-):
+) -> None:
     # Arrange
     email = "test@example.com"
     password = "Password123"
@@ -214,7 +210,7 @@ def test_register_database_error(
 
 def test_register_reactivate_existing_inactive_user(
     mock_db, mock_logger, mock_bcrypt, mock_register_schema_load
-):
+) -> None:
     # Arrange
     email = "test@example.com"
     password = "NewPassword123"
@@ -278,7 +274,7 @@ def test_register_reactivate_existing_inactive_user(
 
 def test_register_unexpected_exception(
     mock_db, mock_logger, mock_bcrypt, mock_register_schema_load
-):
+) -> None:
     # Arrange
     email = "test@example.com"
     password = "Password123"
@@ -315,7 +311,7 @@ def test_register_unexpected_exception(
 
 def test_login_success(
     mock_db, mock_logger, mock_bcrypt, mock_generate_jwt, mock_login_schema_load
-):
+) -> None:
     # Arrange
     username = "johndoe"
     password = "Password123"
@@ -362,7 +358,7 @@ def test_login_success(
     assert status_code == 200, "Unexpected status code for login"
 
 
-def test_login_validation_error(mock_login_schema_load):
+def test_login_validation_error(mock_login_schema_load) -> None:
     # Arrange
     mock_login_schema_load.side_effect = ValidationError("Invalid data")
 
@@ -372,7 +368,7 @@ def test_login_validation_error(mock_login_schema_load):
     assert str(exc_info.value) == "Invalid data"
 
 
-def test_login_invalid_username(mock_db, mock_logger, mock_login_schema_load):
+def test_login_invalid_username(mock_db, mock_logger, mock_login_schema_load) -> None:
     # Arrange
     username = "nonexistent"
     password = "Password123"
@@ -392,7 +388,7 @@ def test_login_invalid_username(mock_db, mock_logger, mock_login_schema_load):
     mock_logger.warning.assert_called_with("Invalid username or password")
 
 
-def test_login_inactive_user(mock_db, mock_logger, mock_login_schema_load):
+def test_login_inactive_user(mock_db, mock_logger, mock_login_schema_load) -> None:
     # Arrange
     username = "johndoe"
     password = "Password123"
@@ -424,7 +420,7 @@ def test_login_inactive_user(mock_db, mock_logger, mock_login_schema_load):
 
 def test_login_invalid_password(
     mock_db, mock_logger, mock_bcrypt, mock_login_schema_load
-):
+) -> None:
     # Arrange
     username = "johndoe"
     password = "WrongPassword"
@@ -457,7 +453,7 @@ def test_login_invalid_password(
 
 def test_login_jwt_generation_failure(
     mock_db, mock_logger, mock_bcrypt, mock_generate_jwt, mock_login_schema_load
-):
+) -> None:
     # Arrange
     username = "johndoe"
     password = "Password123"
@@ -489,7 +485,7 @@ def test_login_jwt_generation_failure(
     mock_logger.error.assert_called_with("Failed to generate JWT")
 
 
-def test_login_database_error(mock_db, mock_logger, mock_login_schema_load):
+def test_login_database_error(mock_db, mock_logger, mock_login_schema_load) -> None:
     # Arrange
     username = "johndoe"
     password = "Password123"
@@ -516,19 +512,19 @@ def test_login_database_error(mock_db, mock_logger, mock_login_schema_load):
 # -------------------------
 
 
-def test_validate_email_valid():
+def test_validate_email_valid() -> None:
     email = "test@example.com"
     result = validate_email(email)
     assert result is True, f"Expected True for valid email {email}"
 
 
-def test_validate_email_invalid():
+def test_validate_email_invalid() -> None:
     email = "invalid-email"
     result = validate_email(email)
     assert result is False, f"Expected False for invalid email {email}"
 
 
-def test_validate_email_edge_cases():
+def test_validate_email_edge_cases() -> None:
     # Valid emails
     valid_emails = [
         "user@example.com",
@@ -561,19 +557,19 @@ def test_validate_email_edge_cases():
 # -------------------------
 
 
-def test_validate_name_valid():
+def test_validate_name_valid() -> None:
     name = "John"
     result = validate_name(name)
     assert result is True, f"Expected True for valid name {name}"
 
 
-def test_validate_name_invalid():
+def test_validate_name_invalid() -> None:
     name = "John123"
     result = validate_name(name)
     assert result is False, f"Expected False for invalid name {name}"
 
 
-def test_validate_name_edge_cases():
+def test_validate_name_edge_cases() -> None:
     # Valid names (only a-zA-Z as per regex)
     valid_names = ["John", "Alice", "Connor"]
     for name in valid_names:
@@ -590,7 +586,7 @@ def test_validate_name_edge_cases():
 # -------------------------
 
 
-def test_logout():
+def test_logout() -> None:
     response, status_code = logout()
     assert response == {"message": "Logout successful"}, "Unexpected logout response"
     assert status_code == 200, "Unexpected status code for logout"
@@ -601,7 +597,7 @@ def test_logout():
 # -------------------------
 
 
-def test_reset_password():
+def test_reset_password() -> None:
     email = "test@example.com"
     response, status_code = reset_password(email)
     assert response == {
@@ -615,7 +611,7 @@ def test_reset_password():
 # -------------------------
 
 
-def test_change_password_success(mock_logger):
+def test_change_password_success(mock_logger) -> None:
     old_password = "password123"
     new_password = "newpassword456"
 
@@ -636,7 +632,7 @@ def test_change_password_success(mock_logger):
     assert status_code == 200, "Unexpected status code for change password"
 
 
-def test_change_password_invalid_old_password(mock_logger):
+def test_change_password_invalid_old_password(mock_logger) -> None:
     old_password = "wrongpassword"
     new_password = "newpassword456"
 
@@ -658,7 +654,7 @@ def test_change_password_invalid_old_password(mock_logger):
 
 def test_deactivate_account_success(
     mock_db, mock_logger, mock_deactivate_account_schema_load, mock_bcrypt
-):
+) -> None:
     # Arrange
     username = "johndoe"
     password = "Password123"
@@ -702,7 +698,7 @@ def test_deactivate_account_success(
 
 def test_deactivate_account_invalid_credentials(
     mock_db, mock_logger, mock_deactivate_account_schema_load, mock_bcrypt
-):
+) -> None:
     # Arrange
     username = "johndoe"
     password = "WrongPassword"
@@ -739,7 +735,7 @@ def test_deactivate_account_invalid_credentials(
 
 def test_deactivate_account_user_not_found(
     mock_db, mock_logger, mock_deactivate_account_schema_load
-):
+) -> None:
     # Arrange
     username = "nonexistent"
     password = "Password123"
@@ -764,7 +760,7 @@ def test_deactivate_account_user_not_found(
 
 def test_deactivate_account_already_inactive(
     mock_db, mock_logger, mock_deactivate_account_schema_load
-):
+) -> None:
     # Arrange
     username = "johndoe"
     password = "Password123"
@@ -804,7 +800,7 @@ def test_deactivate_account_already_inactive(
 
 def test_deactivate_account_schema_validation_error(
     mock_deactivate_account_schema_load,
-):
+) -> None:
     # Arrange
     mock_deactivate_account_schema_load.side_effect = ValidationError("Invalid data")
 
@@ -816,7 +812,7 @@ def test_deactivate_account_schema_validation_error(
 
 def test_deactivate_account_exception(
     mock_db, mock_logger, mock_deactivate_account_schema_load
-):
+) -> None:
     # Arrange
     username = "johndoe"
     password = "Password123"
@@ -848,7 +844,7 @@ def test_deactivate_account_exception(
 
 def test_register_with_missing_arguments(
     mock_db, mock_logger, mock_bcrypt, mock_register_schema_load
-):
+) -> None:
     # Arrange
     # Missing last_name
     mock_register_schema_load.side_effect = ValidationError("Missing data")
@@ -859,7 +855,7 @@ def test_register_with_missing_arguments(
     assert str(exc_info.value) == "Missing data"
 
 
-def test_login_with_empty_password(mock_login_schema_load):
+def test_login_with_empty_password(mock_login_schema_load) -> None:
     # Arrange
     mock_login_schema_load.side_effect = ValidationError("Password cannot be empty")
 
@@ -869,7 +865,7 @@ def test_login_with_empty_password(mock_login_schema_load):
     assert str(exc_info.value) == "Password cannot be empty"
 
 
-def test_deactivate_account_with_empty_username(mock_deactivate_account_schema_load):
+def test_deactivate_account_with_empty_username(mock_deactivate_account_schema_load) -> None:
     # Arrange
     mock_deactivate_account_schema_load.side_effect = ValidationError(
         "Username cannot be empty"
@@ -886,69 +882,69 @@ def test_deactivate_account_with_empty_username(mock_deactivate_account_schema_l
 # -------------------------
 
 
-def test_validate_email_edge_cases():
-    # Valid emails
-    valid_emails = [
-        "user@example.com",
-        "user.name+tag+sorting@example.com",
-        "user_name@example.co.uk",
-        "user-name@example.org",
-    ]
-    for email in valid_emails:
-        assert validate_email(email) is True, f"Expected True for valid email {email}"
+# def test_validate_email_edge_cases():
+#     # Valid emails
+#     valid_emails = [
+#         "user@example.com",
+#         "user.name+tag+sorting@example.com",
+#         "user_name@example.co.uk",
+#         "user-name@example.org",
+#     ]
+#     for email in valid_emails:
+#         assert validate_email(email) is True, f"Expected True for valid email {email}"
 
-    # Invalid emails
-    invalid_emails = [
-        "plainaddress",
-        "@missingusername.com",
-        "username@.com",
-        "username@com",
-        "username@.com.com",
-        ".username@yahoo.com",
-        "username@yahoo.com.",
-        "username@yahoo..com",
-    ]
-    for email in invalid_emails:
-        assert (
-            validate_email(email) is False
-        ), f"Expected False for invalid email {email}"
+#     # Invalid emails
+#     invalid_emails = [
+#         "plainaddress",
+#         "@missingusername.com",
+#         "username@.com",
+#         "username@com",
+#         "username@.com.com",
+#         ".username@yahoo.com",
+#         "username@yahoo.com.",
+#         "username@yahoo..com",
+#     ]
+#     for email in invalid_emails:
+#         assert (
+#             validate_email(email) is False
+#         ), f"Expected False for invalid email {email}"
 
 
-def test_validate_email_leading_dot():
+def test_validate_email_leading_dot() -> None:
     # Invalid email with leading dot in local part
     email = ".username@yahoo.com"
     result = validate_email(email)
     assert result is False, f"Expected False for invalid email {email}"
 
 
-def test_validate_email_trailing_dot():
+def test_validate_email_trailing_dot() -> None:
     # Invalid email with trailing dot in domain
     email = "username@yahoo.com."
     result = validate_email(email)
     assert result is False, f"Expected False for invalid email {email}"
 
 
-def test_validate_email_consecutive_dots():
+def test_validate_email_consecutive_dots() -> None:
     # Invalid email with consecutive dots in local part
     email = "user..name@example.com"
     result = validate_email(email)
     assert result is False, f"Expected False for invalid email {email}"
 
 
-def test_validate_email_valid_subdomains():
+def test_validate_email_valid_subdomains() -> None:
     # Valid email with multiple subdomains
     email = "user@sub.mail.example.com"
     result = validate_email(email)
     assert result is True, f"Expected True for valid email {email}"
 
 
-def test_validate_name_edge_cases():
-    # Valid names (only a-zA-Z as per regex)
-    valid_names = ["John", "Alice", "Connor"]
-    for name in valid_names:
-        assert validate_name(name) is True, f"Expected True for valid name {name}"
+# def test_validate_name_edge_cases():
+#     # Valid names (only a-zA-Z as per regex)
+#     valid_names = ["John", "Alice", "Connor"]
+#     for name in valid_names:
+#         assert validate_name(name) is True, f"Expected True for valid name {name}"
 
-    # Invalid names
-    invalid_names = ["John123", "Alice!", "Bob_the_builder", "12345", " ", "Élodie"]
-    for name in invalid_names:
-        assert validate_name(name) is False, f"Expected False for invalid name {name}"
+#     # Invalid names
+#     invalid_names = ["John123", "Alice!", "Bob_the_builder", "12345", " ", "Élodie"]
+#     for name in invalid_names:
+#         assert validate_name(name) is False, f"Expected False for invalid name {name}"

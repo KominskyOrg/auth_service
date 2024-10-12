@@ -2,7 +2,6 @@ import logging
 import bcrypt
 import re
 from app.models import User
-from app.database import get_db
 from app.service.jwt import generate_jwt
 from app.utils.exceptions import (
     ValidationError,
@@ -13,8 +12,6 @@ from app.utils.exceptions import (
 from app.schemas.auth_schemas import (
     RegisterSchema,
     LoginSchema,
-    ResetPasswordSchema,
-    ChangePasswordSchema,
     DeactivateAccountSchema,
 )
 from sqlalchemy.exc import SQLAlchemyError

@@ -3,7 +3,6 @@
 import pytest
 from unittest.mock import patch
 import importlib
-import sys
 
 
 @pytest.mark.parametrize(
@@ -59,10 +58,8 @@ import sys
         ),
     ],
 )
-def test_configuration(env_vars, expected_uri, expected_debug, expected_env):
-    """
-    Test configuration classes based on environment variables.
-    """
+def test_configuration(env_vars, expected_uri, expected_debug, expected_env) -> None:
+    """Test configuration classes based on environment variables."""
     with patch.dict("os.environ", env_vars, clear=True):
         import app.config
 
@@ -87,10 +84,8 @@ def test_configuration(env_vars, expected_uri, expected_debug, expected_env):
         assert Config.SQLALCHEMY_TRACK_MODIFICATIONS is False
 
 
-def test_get_config_development():
-    """
-    Test that get_config() returns DevConfig when FLASK_ENV is development.
-    """
+def test_get_config_development() -> None:
+    """Test that get_config() returns DevConfig when FLASK_ENV is development."""
     env_vars = {
         "FLASK_ENV": "development",
         "LOCAL_DATABASE_URL": "mysql://dev_user:dev_pass@localhost:3306/dev_db",
@@ -105,10 +100,8 @@ def test_get_config_development():
         assert config_class == DevConfig
 
 
-def test_get_config_staging():
-    """
-    Test that get_config() returns StagingConfig when FLASK_ENV is staging.
-    """
+def test_get_config_staging() -> None:
+    """Test that get_config() returns StagingConfig when FLASK_ENV is staging."""
     env_vars = {
         "FLASK_ENV": "staging",
         "db_username": "staging_user",
@@ -127,10 +120,8 @@ def test_get_config_staging():
         assert config_class == StagingConfig
 
 
-def test_get_config_production():
-    """
-    Test that get_config() returns ProdConfig when FLASK_ENV is production.
-    """
+def test_get_config_production() -> None:
+    """Test that get_config() returns ProdConfig when FLASK_ENV is production."""
     env_vars = {
         "FLASK_ENV": "production",
         "db_username": "prod_user",
@@ -149,10 +140,8 @@ def test_get_config_production():
         assert config_class == ProdConfig
 
 
-def test_get_config_unknown_env():
-    """
-    Test that get_config() raises ValueError for an unknown FLASK_ENV.
-    """
+def test_get_config_unknown_env() -> None:
+    """Test that get_config() raises ValueError for an unknown FLASK_ENV."""
     env_vars = {
         "FLASK_ENV": "unknown_env",
     }

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 
-def init_db(app):
+def init_db(app) -> None:
     database_url = os.getenv("DATABASE_URL", "sqlite:///./test.db")
     logger.info("Initializing database")
     logger.debug(f"Database URL: {database_url}")
@@ -32,7 +32,6 @@ def init_db(app):
     db_session = scoped_session(SessionLocal)
     logger.info("Scoped session created")
 
-    import app.models  # Import models to reflect schema in the database
 
     logger.info("Models imported")
     Base.metadata.create_all(bind=engine)
@@ -41,8 +40,7 @@ def init_db(app):
 
 @contextmanager
 def get_db():
-    """
-    Provides a database session for a request.
+    """Provides a database session for a request.
     Closes the session when done.
     """
     logger.debug("Getting database session")

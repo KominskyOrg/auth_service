@@ -22,7 +22,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    def __init__(self, email, username, password, first_name, last_name):
+    def __init__(self, email, username, password, first_name, last_name) -> None:
         self.email = email
         self.username = username
         self.password = password  # Already hashed
@@ -34,7 +34,7 @@ class User(Base):
         logger.debug(f"Initializing User with username: {username}")
         logger.info(f"User object created with username: {username}")
 
-    def set_password(self, new_password):
+    def set_password(self, new_password) -> None:
         logger.debug(f"Setting new password for user: {self.username}")
         self.password = new_password
         logger.info(f"Password updated for user: {self.username}")

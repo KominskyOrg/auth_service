@@ -18,9 +18,7 @@ import logging
 
 @pytest.fixture
 def app():
-    """
-    Fixture to create a Flask app for testing.
-    """
+    """Fixture to create a Flask app for testing."""
     app = Flask(__name__)
     return app
 
@@ -28,9 +26,8 @@ def app():
 # -------------------- handle_request Tests -------------------- #
 
 
-def test_handle_request_success(client, mocker, caplog):
-    """
-    Test handle_request with a successful service function.
+def test_handle_request_success(client, mocker, caplog) -> None:
+    """Test handle_request with a successful service function.
     Ensures that the correct response and status code are returned.
     """
     # Arrange
@@ -61,9 +58,8 @@ def test_handle_request_success(client, mocker, caplog):
     )
 
 
-def test_handle_request_validation_error(client, mocker, caplog):
-    """
-    Test handle_request when a Marshmallow ValidationError is raised.
+def test_handle_request_validation_error(client, mocker, caplog) -> None:
+    """Test handle_request when a Marshmallow ValidationError is raised.
     Ensures that a 400 Bad Request is returned.
     """
     # Arrange
@@ -88,9 +84,8 @@ def test_handle_request_validation_error(client, mocker, caplog):
     assert f"Validation error in mock_service: {error_message}" in caplog.text
 
 
-def test_handle_request_custom_validation_error(client, mocker, caplog):
-    """
-    Test handle_request when a custom ValidationError is raised.
+def test_handle_request_custom_validation_error(client, mocker, caplog) -> None:
+    """Test handle_request when a custom ValidationError is raised.
     Ensures that a 400 Bad Request is returned.
     """
     # Arrange
@@ -115,9 +110,8 @@ def test_handle_request_custom_validation_error(client, mocker, caplog):
     assert f"Validation error in mock_service: {error_message}" in caplog.text
 
 
-def test_handle_request_authentication_error(client, mocker, caplog):
-    """
-    Test handle_request when an AuthenticationError is raised.
+def test_handle_request_authentication_error(client, mocker, caplog) -> None:
+    """Test handle_request when an AuthenticationError is raised.
     Ensures that a 401 Unauthorized is returned.
     """
     # Arrange
@@ -142,9 +136,8 @@ def test_handle_request_authentication_error(client, mocker, caplog):
     assert f"Authentication error in mock_service: {error_message}" in caplog.text
 
 
-def test_handle_request_authorization_error(client, mocker, caplog):
-    """
-    Test handle_request when an AuthorizationError is raised.
+def test_handle_request_authorization_error(client, mocker, caplog) -> None:
+    """Test handle_request when an AuthorizationError is raised.
     Ensures that a 403 Forbidden is returned.
     """
     # Arrange
@@ -169,9 +162,8 @@ def test_handle_request_authorization_error(client, mocker, caplog):
     assert f"Authorization error in mock_service: {error_message}" in caplog.text
 
 
-def test_handle_request_database_error(client, mocker, caplog):
-    """
-    Test handle_request when a DatabaseError is raised.
+def test_handle_request_database_error(client, mocker, caplog) -> None:
+    """Test handle_request when a DatabaseError is raised.
     Ensures that a 500 Internal Server Error is returned.
     """
     # Arrange
@@ -196,9 +188,8 @@ def test_handle_request_database_error(client, mocker, caplog):
     assert f"Database error in mock_service: {error_message}" in caplog.text
 
 
-def test_handle_request_unexpected_error(client, mocker, caplog):
-    """
-    Test handle_request when a generic Exception is raised.
+def test_handle_request_unexpected_error(client, mocker, caplog) -> None:
+    """Test handle_request when a generic Exception is raised.
     Ensures that a 500 Internal Server Error is returned.
     """
     # Arrange
