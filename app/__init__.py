@@ -3,10 +3,10 @@
 import logging
 from flask import Flask
 from flask_cors import CORS
+from flask_migrate import Migrate
 from app.routes import auth_service_bp
 from app.config import get_config
-from app.database import init_db
-
+from app.database import init_db, db
 
 def create_app():
     app = Flask(__name__)
@@ -15,23 +15,30 @@ def create_app():
     CORS(app)
 
     logger = app.logger
-    logger.info("Creating the Flask application.")
+    logger.debug("Creating the Flask application.")
 
     # Load configuration
     config = get_config()
     app.config.from_object(config)
-    logger.info("Configuration loaded.")
+    logger.debug("Configuration loaded.")
 
     # Set up detailed logging after configuration
     setup_logging(app)
 
     # Initialize the database
     init_db(app)
-    logger.info("Database has been initialized.")
+    logger.debug("Database has been initialized.")
+
+    # Initialize Flask-Migrate
+    migrate = Migrate(app, db)
+    logger.debug("Flask-Migrate has been initialized.")
+
+    # Import models after initializing db and migrate
+    from app import models  # Ensure models are imported here
 
     # Register blueprints
     app.register_blueprint(auth_service_bp)
-    logger.info("Auth service blueprint registered.")
+    logger.debug("Auth service blueprint registered.")
 
     # Conditionally register Swagger UI in development environment
     if app.config.get("ENV") == "development":
@@ -39,7 +46,6 @@ def create_app():
 
     logger.info("Flask application creation complete.")
     return app
-
 
 def setup_logging(app) -> None:
     """Configures logging for the Flask application."""
@@ -67,7 +73,6 @@ def setup_logging(app) -> None:
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(formatter)
         app.logger.addHandler(file_handler)
-
 
 def register_swagger_ui(app, logger) -> None:
     """Registers Swagger UI for API documentation in development environment."""

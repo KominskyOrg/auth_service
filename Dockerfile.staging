@@ -6,10 +6,10 @@ WORKDIR /app
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config \
-    default-libmysqlclient-dev \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+  pkg-config \
+  default-libmysqlclient-dev \
+  build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install pipenv
 RUN pip install --no-cache-dir pipenv
@@ -34,10 +34,11 @@ WORKDIR /app
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    libmariadb3 \
-    default-mysql-client \
-    && rm -rf /var/lib/apt/lists/*
+  curl \
+  libmariadb3 \
+  default-mysql-client \
+  netcat-openbsd \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy system site-packages from builder
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
@@ -64,5 +65,5 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5001/api/auth/health || exit 1
 
-# Run the application with uWSGI
-CMD ["uwsgi", "--ini", "uwsgi.ini"]
+# Define the entrypoint script
+ENTRYPOINT ["/app/entrypoint/entrypoint.sh"]

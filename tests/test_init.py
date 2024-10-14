@@ -105,10 +105,6 @@ def test_create_app_development(
 
     # Ensure the log messages are present
     expected_logs = [
-        "Creating the Flask application.",
-        "Configuration loaded.",
-        "Database has been initialized.",
-        "Auth service blueprint registered.",
         "Swagger UI has been registered at /api/docs.",
     ]
     for log_msg in expected_logs:

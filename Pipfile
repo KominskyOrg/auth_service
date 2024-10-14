@@ -18,13 +18,14 @@ mysqlclient = "*"
 pyjwt = "*"
 uwsgi = "*"
 marshmallow = "*"
-pytest-flask = "*"
+Flask-Migrate = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+pytest-flask = "*"
 ruff = "*"
 
 [requires]

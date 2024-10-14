@@ -1,46 +1,27 @@
 # app/models.py
 
-import logging
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from sqlalchemy.orm import declarative_base
+from app.database import db
 from datetime import datetime
 
-logger = logging.getLogger(__name__)
 
-Base = declarative_base()
-
-
-class User(Base):
+class User(db.Model):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    username = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)  # This will store the hashed password
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    def __init__(self, email, username, password, first_name, last_name) -> None:
-        self.email = email
-        self.username = username
-        self.password = password  # Already hashed
-        self.first_name = first_name
-        self.last_name = last_name
-        self.is_active = True
-        self.created_at = None
-
-        logger.debug(f"Initializing User with username: {username}")
-        logger.info(f"User object created with username: {username}")
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    email = db.Column(db.String(255), unique=True, index=True, nullable=False)
+    username = db.Column(db.String(150), unique=True, index=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    first_name = db.Column(db.String(150), nullable=False)
+    last_name = db.Column(db.String(150), nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     def set_password(self, new_password) -> None:
-        logger.debug(f"Setting new password for user: {self.username}")
+        """Set a new password for the user."""
         self.password = new_password
-        logger.info(f"Password updated for user: {self.username}")
 
     def to_dict(self):
-        logger.debug(f"Converting User object to dictionary: {self.username}")
+        """Convert the User object to a dictionary."""
         return {
             "id": self.id,
             "username": self.username,

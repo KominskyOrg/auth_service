@@ -58,7 +58,7 @@ help:
 # ==============================================================================
 
 up:
-	$(DOCKER_COMPOSE) up -d
+	$(DOCKER_COMPOSE) up --build
 
 down:
 	$(DOCKER_COMPOSE) down

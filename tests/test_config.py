@@ -24,7 +24,7 @@ import importlib
                 "FLASK_ENV": "development",
                 # No LOCAL_DATABASE_URL provided
             },
-            "mysql://auth_user:auth_password@db:3306/auth_database",
+            "mysql://auth_user:auth_password@db:3306/auth_db",
             True,
             "development",
         ),

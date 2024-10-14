@@ -14,7 +14,7 @@ class Config:
 
 class DevConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        "LOCAL_DATABASE_URL", "mysql://auth_user:auth_password@db:3306/auth_database"
+        "LOCAL_DATABASE_URL", "mysql://auth_user:auth_password@db:3306/auth_db"
     )
     DEBUG = True
     ENV = "development"
