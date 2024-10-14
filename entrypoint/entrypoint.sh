@@ -2,11 +2,11 @@
 set -e  # Exit immediately if a command exits with a non-zero status
 
 # Assign environment variables with default values
-readonly DB_HOST="${DB_HOST:-db}"
-readonly DB_PORT="${DB_PORT:-3306}"
-readonly DB_NAME="${DB_NAME:-auth_service}"
-readonly DB_USER="${DB_USER:-auth_user}"
-readonly DB_PASSWORD="${DB_PASSWORD:-password}"
+readonly DB_HOST="${db_host:-db}"
+readonly DB_PORT="${db_port:-3306}"
+readonly DB_NAME="${db_name:-auth_service}"
+readonly DB_USER="${db_user:-auth_user}"
+readonly DB_PASSWORD="${db_password:-password}"
 
 # Function to wait for the MySQL database to be ready
 wait_for_db() {
