@@ -18,12 +18,15 @@ mysqlclient = "*"
 pyjwt = "*"
 uwsgi = "*"
 marshmallow = "*"
+Flask-Migrate = "*"
 
 [dev-packages]
 flask-swagger-ui = "*"
-black = "*"
-flake8 = "*"
-autopep8 = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+pytest-flask = "*"
+ruff = "*"
 
 [requires]
 python_version = "3.12"

@@ -36,6 +36,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libmariadb3 \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy system site-packages from builder
@@ -59,5 +60,5 @@ USER appuser
 # Expose the development port
 EXPOSE 5001
 
-# Command to run the application with Flask's development server and hot reloading
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5001", "--reload"]
+# Define the entrypoint script
+ENTRYPOINT ["./entrypoint/entrypoint.sh"]

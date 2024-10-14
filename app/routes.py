@@ -1,5 +1,3 @@
-# app/routes/auth_routes.py
-
 from flask import Blueprint, request, jsonify
 from app.service.auth import (
     login,
@@ -19,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 auth_service_bp = Blueprint("auth", __name__, url_prefix="/service/auth")
 
+
 @auth_service_bp.route("/login", methods=["POST"])
 def login_route():
     data = request.json
@@ -27,7 +26,9 @@ def login_route():
 
     try:
         with get_db() as db:
-            response = handle_request(login, data.get("username"), data.get("password"), db=db)
+            response = handle_request(
+                login, data.get("username"), data.get("password"), db=db
+            )
             logger.debug(f"Response: {response}")
             return response
     except SQLAlchemyError as db_err:
@@ -36,6 +37,7 @@ def login_route():
     except Exception as e:
         logger.error(f"Unexpected error during login: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
+
 
 @auth_service_bp.route("/register", methods=["POST"])
 def register_route():
@@ -52,7 +54,7 @@ def register_route():
                 data.get("first_name"),
                 data.get("last_name"),
                 data.get("username"),
-                db=db
+                db=db,
             )
             logger.debug(f"Response: {response}")
             return response
@@ -62,6 +64,7 @@ def register_route():
     except Exception as e:
         logger.error(f"Unexpected error during registration: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
+
 
 @auth_service_bp.route("/logout", methods=["POST"])
 def logout_route():
@@ -78,6 +81,7 @@ def logout_route():
     except Exception as e:
         logger.error(f"Unexpected error during logout: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
+
 
 @auth_service_bp.route("/reset-password", methods=["POST"])
 def reset_password_route():
@@ -97,6 +101,7 @@ def reset_password_route():
         logger.error(f"Unexpected error during password reset: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
+
 @auth_service_bp.route("/change-password", methods=["POST"])
 def change_password_route():
     data = request.json
@@ -109,7 +114,7 @@ def change_password_route():
                 change_password,
                 data.get("old_password"),
                 data.get("new_password"),
-                db=db
+                db=db,
             )
             logger.debug(f"Response: {response}")
             return response
@@ -120,6 +125,7 @@ def change_password_route():
         logger.error(f"Unexpected error during password change: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
+
 @auth_service_bp.route("/deactivate-account", methods=["POST"])
 def deactivate_account_route():
     data = request.json
@@ -129,10 +135,7 @@ def deactivate_account_route():
     try:
         with get_db() as db:
             response = handle_request(
-                deactivate_account,
-                data.get("username"),
-                data.get("password"),
-                db=db
+                deactivate_account, data.get("username"), data.get("password"), db=db
             )
             logger.debug(f"Response: {response}")
             return response
@@ -143,9 +146,8 @@ def deactivate_account_route():
         logger.error(f"Unexpected error during account deactivation: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
+
 @auth_service_bp.route("/health", methods=["GET"])
 def health():
-    """
-    Health check endpoint to verify that the auth_service is running.
-    """
+    """Health check endpoint to verify that the auth_service is running."""
     return jsonify({"status": "OK"}), 200
