@@ -30,7 +30,7 @@ def create_app():
     logger.debug("Database has been initialized.")
 
     # Initialize Flask-Migrate
-    migrate = Migrate(app, db)
+    Migrate(app, db)
     logger.debug("Flask-Migrate has been initialized.")
 
     # Import models after initializing db and migrate
